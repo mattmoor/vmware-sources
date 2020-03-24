@@ -16,9 +16,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: controller
-  namespace: knative-samples
+  namespace: vmware-sources
   labels:
-    samples.knative.dev/release: devel
+    sources.knative.dev/release: devel
 spec:
   replicas: 1
   selector:
@@ -30,7 +30,7 @@ spec:
         sidecar.istio.io/inject: "false"
       labels:
         app: controller
-        samples.knative.dev/release: devel
+        sources.knative.dev/release: devel
     spec:
       serviceAccountName: controller
       containers:

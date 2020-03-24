@@ -463,14 +463,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7f857c743b73800b187068d383071cbb28020958089ba0e47d80f4d4a76ff7ad"
+  digest = "1:274c2fa94d93c89fb107c18f715732390bcc4cf337d8d82cdeee5d92d162ff14"
   name = "golang.org/x/net"
   packages = [
     "context",
     "context/ctxhttp",
     "http/httpguts",
     "http2",
-    "http2/h2c",
     "http2/hpack",
     "idna",
     "internal/timeseries",
@@ -1041,6 +1040,14 @@
   revision = "5008bf6f8cd62f4b52816cfa99163fedb053d0be"
 
 [[projects]]
+  digest = "1:6145f644e40f8f0f161f08508581c1a0585c8303e4d9c2a162d8de8146fdcd60"
+  name = "knative.dev/eventing"
+  packages = ["pkg/apis/sources"]
+  pruneopts = "NUT"
+  revision = "09a74f1fe06f14e533d3d0bbd032340259536331"
+  version = "v0.13.4"
+
+[[projects]]
   branch = "master"
   digest = "1:b866a374c5f954ec0830aa3c31962f4f8777624a77eba2b99fb19c732d5c2452"
   name = "knative.dev/pkg"
@@ -1052,7 +1059,6 @@
     "client/injection/kube/client",
     "client/injection/kube/informers/admissionregistration/v1beta1/mutatingwebhookconfiguration",
     "client/injection/kube/informers/admissionregistration/v1beta1/validatingwebhookconfiguration",
-    "client/injection/kube/informers/core/v1/service",
     "client/injection/kube/informers/factory",
     "codegen/cmd/injection-gen",
     "codegen/cmd/injection-gen/args",
@@ -1070,7 +1076,6 @@
     "logging/logkey",
     "metrics",
     "metrics/metricskey",
-    "network",
     "profiling",
     "ptr",
     "reconciler",
@@ -1129,7 +1134,6 @@
     "k8s.io/client-go/discovery/fake",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/kubernetes/typed/core/v1",
-    "k8s.io/client-go/listers/core/v1",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/testing",
     "k8s.io/client-go/tools/cache",
@@ -1140,10 +1144,10 @@
     "k8s.io/code-generator/cmd/defaulter-gen",
     "k8s.io/code-generator/cmd/informer-gen",
     "k8s.io/code-generator/cmd/lister-gen",
+    "knative.dev/eventing/pkg/apis/sources",
     "knative.dev/pkg/apis",
     "knative.dev/pkg/apis/duck/v1",
     "knative.dev/pkg/client/injection/kube/client",
-    "knative.dev/pkg/client/injection/kube/informers/core/v1/service",
     "knative.dev/pkg/codegen/cmd/injection-gen",
     "knative.dev/pkg/configmap",
     "knative.dev/pkg/controller",
@@ -1152,7 +1156,6 @@
     "knative.dev/pkg/kmeta",
     "knative.dev/pkg/logging",
     "knative.dev/pkg/metrics",
-    "knative.dev/pkg/network",
     "knative.dev/pkg/reconciler",
     "knative.dev/pkg/signals",
     "knative.dev/pkg/system",

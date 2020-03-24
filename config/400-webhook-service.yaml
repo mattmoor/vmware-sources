@@ -17,9 +17,9 @@ kind: Service
 metadata:
   labels:
     role: webhook
-    samples.knative.dev/release: devel
+    sources.knative.dev/release: devel
   name: webhook
-  namespace: knative-samples
+  namespace: vmware-sources
 spec:
   ports:
     - port: 443
