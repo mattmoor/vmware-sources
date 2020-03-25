@@ -56,11 +56,25 @@ metadata:
 spec:
   sink:
     ref:
-      apiVersion: serving.knative.dev/v1
-      kind: Service
-      name: sockeye
+      apiVersion: eventing.knative.dev/v1alpha1
+      kind: Broker
+      name: default
 
   address: vcsim.default.svc.cluster.local
   skipTLSVerify: true
   secretRef:
     name: vsphere-credentials
+---
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: to-sockeye
+spec:
+  filter:
+    # attributes:
+    #   type: com.vmware.vsphere.datacentercreatedevent
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: sockeye
