@@ -27,7 +27,6 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
-	"knative.dev/eventing/pkg/apis/duck"
 	clientset "knative.dev/eventing/pkg/client/clientset/versioned"
 	sourcesv1alpha1lister "knative.dev/eventing/pkg/client/listers/sources/v1alpha1"
 	"knative.dev/pkg/logging"
@@ -70,7 +69,7 @@ func (r *Reconciler) reconcileSinkBinding(ctx context.Context, vms *sourcesv1alp
 
 	sinkbinding, err := r.sinkbindingLister.SinkBindings(ns).Get(sinkbindingName)
 	if apierrs.IsNotFound(err) {
-		sinkbinding := resources.MakeSinkBinding(ctx, vms)
+		sinkbinding = resources.MakeSinkBinding(ctx, vms)
 		sinkbinding, err = r.eventingclient.SourcesV1alpha1().SinkBindings(ns).Create(sinkbinding)
 		if err != nil {
 			return fmt.Errorf("failed to create sinkbinding %q: %w", sinkbindingName, err)
@@ -89,7 +88,8 @@ func (r *Reconciler) reconcileSinkBinding(ctx context.Context, vms *sourcesv1alp
 		}
 	}
 
-	// TODO(mattmoor): Check IsReady
+	// Reflect the state of the SinkBinding in the VSphereSource
+	vms.Status.PropagateSourceStatus(sinkbinding.Status.SourceStatus)
 
 	return nil
 }
@@ -100,7 +100,7 @@ func (r *Reconciler) reconcileDeployment(ctx context.Context, vms *sourcesv1alph
 
 	deployment, err := r.deploymentLister.Deployments(ns).Get(deploymentName)
 	if apierrs.IsNotFound(err) {
-		deployment := resources.MakeDeployment(ctx, vms, r.adapterImage)
+		deployment = resources.MakeDeployment(ctx, vms, r.adapterImage)
 		deployment, err = r.kubeclient.AppsV1().Deployments(ns).Create(deployment)
 		if err != nil {
 			return fmt.Errorf("failed to create deployment %q: %w", deploymentName, err)
@@ -119,11 +119,8 @@ func (r *Reconciler) reconcileDeployment(ctx context.Context, vms *sourcesv1alph
 		}
 	}
 
-	if duck.DeploymentIsAvailable(&deployment.Status, false) {
-		logging.FromContext(ctx).Infof("TODO: Update status")
-	} else {
-		logging.FromContext(ctx).Infof("TODO: Update status")
-	}
+	// Reflect the state of the Adapter Deployment in the VSphereSource
+	vms.Status.PropagateAdapterStatus(deployment.Status)
 
 	return nil
 }

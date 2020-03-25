@@ -67,9 +67,14 @@ type VSphereSourceSpec struct {
 }
 
 const (
-	// VSphereSourceConditionReady is set when the revision is starting to materialize
-	// runtime resources, and becomes true when those resources are ready.
+	// VSphereSourceConditionReady is set to reflect the overall state of the resource.
 	VSphereSourceConditionReady = apis.ConditionReady
+
+	// VSphereSourceConditionSourceReady is set to reflect the state of the source part of the VSphereSource.
+	VSphereSourceConditionSourceReady = "SourceReady"
+
+	// VSphereSourceConditionAdapterReady is set to reflect the state of the adapter part of the VSphereSource.
+	VSphereSourceConditionAdapterReady = "AdapterReady"
 )
 
 // VSphereSourceStatus communicates the observed state of the VSphereSource (from the controller).
