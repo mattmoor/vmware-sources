@@ -27,8 +27,6 @@ spec:
       role: webhook
   template:
     metadata:
-      annotations:
-        sidecar.istio.io/inject: "false"
       labels:
         app: webhook
         role: webhook
@@ -39,7 +37,7 @@ spec:
       - name: webhook
         # This is the Go import path for the binary that is containerized
         # and substituted here.
-        image: ko://knative.dev/sample-controller/cmd/webhook
+        image: ko://github.com/mattmoor/vmware-sources/cmd/webhook
         resources:
           # Request 2x what we saw running e2e
           requests:
@@ -57,6 +55,6 @@ spec:
         - name: CONFIG_LOGGING_NAME
           value: config-logging
         - name: METRICS_DOMAIN
-          value: knative.dev/samples
+          value: knative.dev/sources
         - name: WEBHOOK_NAME
           value: webhook

@@ -1,7 +1,66 @@
-apiVersion: samples.knative.dev/v1alpha1
-kind: AddressableService
+apiVersion: v1
+kind: Secret
 metadata:
-  name: make-it-addressable
-  namespace: knative-samples
+  name: vsphere-credentials
+stringData:
+  username: user
+  password: pass
+---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: adapter-test
+# spec:
+#   selector:
+#     matchLabels:
+#       app: adapter
+#   template:
+#     metadata:
+#       labels:
+#         app: adapter
+#     spec:
+#       containers:
+#       - name: adapter
+#         image: ko://github.com/mattmoor/vmware-sources/cmd/receive_adapter
+#         env:
+#         - name: NAMESPACE
+#           valueFrom:
+#             fieldRef:
+#               fieldPath: metadata.namespace
+#         - name: K_SINK
+#           value: http://sockeye.default.svc.cluster.local
+#         - name: K_METRICS_CONFIG
+#           value: '{}'
+#         - name: K_LOGGING_CONFIG
+#           value: '{}'
+#         - name: GOVMOMI_ADDRESS
+#           value: vcsim.default.svc.cluster.local
+#         - name: GOVMOMI_INSECURE
+#           value: "true"
+
+#         volumeMounts:
+#         - mountPath: /var/bindings/vsphere
+#           name: vsphere-binding
+#           readOnly: true
+
+#       volumes:
+#       - name: vsphere-binding
+#         secret:
+#           secretName: vsphere-credentials
+
+---
+apiVersion: sources.knative.dev/v1alpha1
+kind: VSphereSource
+metadata:
+  name: blah
 spec:
-  serviceName: webhook
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: sockeye
+
+  address: vcsim.default.svc.cluster.local
+  skipTLSVerify: true
+  secretRef:
+    name: vsphere-credentials

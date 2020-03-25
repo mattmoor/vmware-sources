@@ -1,0 +1,121 @@
+/*
+Copyright 2020 The Knative Authors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package vsphere
+
+import (
+	"context"
+
+	cloudevents "github.com/cloudevents/sdk-go/v1"
+	"github.com/vmware/govmomi"
+	"github.com/vmware/govmomi/event"
+	"github.com/vmware/govmomi/vim25/types"
+	"go.uber.org/zap"
+	"knative.dev/eventing/pkg/adapter"
+	"knative.dev/pkg/logging"
+	"knative.dev/pkg/source"
+
+	sourcesv1alpha1 "github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
+)
+
+var groupResource = sourcesv1alpha1.Resource("vspheresources")
+
+type envConfig struct {
+	adapter.EnvConfig
+}
+
+func NewEnvConfig() adapter.EnvConfigAccessor {
+	return &envConfig{}
+}
+
+// vAdapter implements the vSphereSource adapter to trigger a Sink.
+type vAdapter struct {
+	Logger    *zap.SugaredLogger
+	Namespace string
+	VClient   *govmomi.Client
+	CEClient  cloudevents.Client
+	Reporter  source.StatsReporter
+}
+
+func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClient cloudevents.Client, reporter source.StatsReporter) adapter.Adapter {
+	env := processed.(*envConfig)
+
+	logger := logging.FromContext(ctx)
+
+	vClient, err := New(ctx)
+	if err != nil {
+		logger.Fatalf("Unable to create vSphere client: %v", err)
+	}
+
+	return &vAdapter{
+		Logger:    logger,
+		Namespace: env.Namespace,
+		Reporter:  reporter,
+		VClient:   vClient,
+		CEClient:  ceClient,
+	}
+}
+
+// Start implements adapter.Adapter
+func (a *vAdapter) Start(stopCh <-chan struct{}) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	// Cancel the context when the stop channel closes.
+	go func() {
+		<-stopCh
+		cancel()
+	}()
+	// Below here use ctx.Done() instead of stopCh.
+
+	manager := event.NewManager(a.VClient.Client)
+
+	managedTypes := []types.ManagedObjectReference{a.VClient.ServiceContent.RootFolder}
+	return manager.Events(ctx, managedTypes, 1, true /* tail */, false /* force */, a.sendEvents(ctx))
+}
+
+func (a *vAdapter) sendEvents(ctx context.Context) func(moref types.ManagedObjectReference, baseEvents []types.BaseEvent) error {
+	return func(moref types.ManagedObjectReference, baseEvents []types.BaseEvent) error {
+		for _, be := range baseEvents {
+			event := cloudevents.NewEvent(cloudevents.VersionV1)
+
+			// TODO(mattmoor): From event
+			event.SetType("todo")
+
+			// TODO(mattmoor): From event
+			event.SetSource("todo")
+
+			event.SetDataContentType(cloudevents.ApplicationJSON)
+
+			// TODO(mattmoor): From event
+			event.SetData(be)
+
+			rctx, _, err := a.CEClient.Send(ctx, event)
+			rtctx := cloudevents.HTTPTransportContextFrom(rctx)
+			if err != nil {
+				a.Logger.Error("failed to send cloudevent", zap.Error(err))
+				return err
+			}
+
+			a.Reporter.ReportEventCount(&source.ReportArgs{
+				Namespace:     a.Namespace,
+				EventSource:   event.Source(),
+				EventType:     event.Type(),
+				ResourceGroup: groupResource.String(),
+			}, rtctx.StatusCode)
+		}
+
+		return nil
+	}
+}

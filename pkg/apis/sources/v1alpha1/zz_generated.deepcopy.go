@@ -89,6 +89,8 @@ func (in *VSphereSourceList) DeepCopyObject() runtime.Object {
 func (in *VSphereSourceSpec) DeepCopyInto(out *VSphereSourceSpec) {
 	*out = *in
 	in.SourceSpec.DeepCopyInto(&out.SourceSpec)
+	in.Address.DeepCopyInto(&out.Address)
+	out.SecretRef = in.SecretRef
 	return
 }
 

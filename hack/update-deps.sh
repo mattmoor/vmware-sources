@@ -48,5 +48,11 @@ dep ensure ${DEP_FLAGS[@]}
 rm -rf $(find vendor/ -name 'OWNERS')
 rm -rf $(find vendor/ -name '*_test.go')
 
+# HACK HACK HACK
+# The only way we found to create a consistent Trace tree without any missing Spans is to
+# artificially set the SpanId. See pkg/tracing/traceparent.go for more details.
+# See: https://github.com/knative/eventing/issues/2052
+git apply ${REPO_ROOT_DIR}/vendor/knative.dev/eventing/hack/set-span-id.patch
+
 # Do this for every package under "cmd" except kodata and cmd itself.
 update_licenses third_party/VENDOR-LICENSE "$(find ./cmd -type d | grep -v kodata | grep -vE 'cmd$')"

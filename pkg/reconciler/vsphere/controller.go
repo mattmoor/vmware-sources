@@ -18,15 +18,20 @@ package vsphere
 
 import (
 	"context"
+	"os"
 
-	"knative.dev/pkg/tracker"
-
+	"k8s.io/client-go/tools/cache"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
 	"knative.dev/pkg/logging"
 
+	"github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
 	vsphereinformer "github.com/mattmoor/vmware-sources/pkg/client/injection/informers/sources/v1alpha1/vspheresource"
 	vspherereconciler "github.com/mattmoor/vmware-sources/pkg/client/injection/reconciler/sources/v1alpha1/vspheresource"
+	eventingclient "knative.dev/eventing/pkg/client/injection/client"
+	sinkbindinginformer "knative.dev/eventing/pkg/client/injection/informers/sources/v1alpha1/sinkbinding"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 )
 
 // NewController creates a Reconciler and returns the result of NewImpl.
@@ -37,14 +42,31 @@ func NewController(
 	logger := logging.FromContext(ctx)
 
 	vsphereInformer := vsphereinformer.Get(ctx)
+	deploymentInformer := deploymentinformer.Get(ctx)
+	sinkbindingInformer := sinkbindinginformer.Get(ctx)
 
-	r := &Reconciler{}
+	r := &Reconciler{
+		adapterImage:      os.Getenv("VSPHERE_ADAPTER"),
+		kubeclient:        kubeclient.Get(ctx),
+		eventingclient:    eventingclient.Get(ctx),
+		deploymentLister:  deploymentInformer.Lister(),
+		sinkbindingLister: sinkbindingInformer.Lister(),
+	}
 	impl := vspherereconciler.NewImpl(ctx, r)
-	r.Tracker = tracker.New(impl.EnqueueKey, controller.GetTrackerLease(ctx))
 
 	logger.Info("Setting up event handlers.")
 
 	vsphereInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
+
+	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
+		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+	})
+
+	sinkbindingInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
+		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+	})
 
 	return impl
 }
