@@ -71,3 +71,12 @@ func New(ctx context.Context) (*govmomi.Client, error) {
 
 	return govmomi.NewClient(ctx, parsedURL, env.Insecure)
 }
+
+func Address(ctx context.Context) (string, error) {
+	var env EnvConfig
+	if err := envconfig.Process("", &env); err != nil {
+		return "", err
+	}
+
+	return env.Address, nil
+}

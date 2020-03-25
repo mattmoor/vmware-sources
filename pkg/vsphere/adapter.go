@@ -18,6 +18,9 @@ package vsphere
 
 import (
 	"context"
+	"fmt"
+	"reflect"
+	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v1"
 	"github.com/vmware/govmomi"
@@ -45,6 +48,7 @@ func NewEnvConfig() adapter.EnvConfigAccessor {
 type vAdapter struct {
 	Logger    *zap.SugaredLogger
 	Namespace string
+	Source    string
 	VClient   *govmomi.Client
 	CEClient  cloudevents.Client
 	Reporter  source.StatsReporter
@@ -60,9 +64,15 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		logger.Fatalf("Unable to create vSphere client: %v", err)
 	}
 
+	source, err := Address(ctx)
+	if err != nil {
+		logger.Fatalf("Unable to determine source: %v", err)
+	}
+
 	return &vAdapter{
 		Logger:    logger,
 		Namespace: env.Namespace,
+		Source:    source,
 		Reporter:  reporter,
 		VClient:   vClient,
 		CEClient:  ceClient,
@@ -90,15 +100,22 @@ func (a *vAdapter) sendEvents(ctx context.Context) func(moref types.ManagedObjec
 		for _, be := range baseEvents {
 			event := cloudevents.NewEvent(cloudevents.VersionV1)
 
-			// TODO(mattmoor): From event
-			event.SetType("todo")
+			event.SetType("com.vmware.vsphere." + strings.ToLower(reflect.TypeOf(be).Elem().Name()))
+			event.SetTime(be.GetEvent().CreatedTime)
+			event.SetID(fmt.Sprintf("%d", be.GetEvent().Key))
+			event.SetSource(a.Source)
 
-			// TODO(mattmoor): From event
-			event.SetSource("todo")
+			switch e := be.(type) {
+			case *types.EventEx:
+				event.SetExtension("EventEx", e)
+			case *types.ExtendedEvent:
+				event.SetExtension("ExtendedEvent", e)
+			}
 
+			// TODO(mattmoor): Consider setting the subject
+
+			// TODO(mattmoor): Switch to XML when sockeye stops sucking at it.
 			event.SetDataContentType(cloudevents.ApplicationJSON)
-
-			// TODO(mattmoor): From event
 			event.SetData(be)
 
 			rctx, _, err := a.CEClient.Send(ctx, event)
