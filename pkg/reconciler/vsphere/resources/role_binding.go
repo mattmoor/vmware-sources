@@ -29,10 +29,6 @@ import (
 // MakeRoleBinding creates a RoleBinding object for the receive adapter
 // service account 'sa' in the Namespace 'ns'. This is necessary for
 // the receive adapter to be able to store state in configmaps.
-// TODO: Create service accounts in reconciler, and pass them here instead
-// of assuming "default"
-// https://github.com/mattmoor/vmware-sources/issues/9
-//func MakeRoleBinding(ctx context.Context, vms *v1alpha1.VSphereSource, name string, nsName string, sa *corev1.ServiceAccount, clusterRoleName string) *rbacv1.RoleBinding {
 func MakeRoleBinding(ctx context.Context, vms *v1alpha1.VSphereSource) *rbacv1.RoleBinding {
 	return &rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
@@ -48,7 +44,7 @@ func MakeRoleBinding(ctx context.Context, vms *v1alpha1.VSphereSource) *rbacv1.R
 		Subjects: []rbacv1.Subject{{
 			Kind:      "ServiceAccount",
 			Namespace: vms.Namespace,
-			Name:      "default",
+			Name:      names.ServiceAccount(vms),
 		}},
 	}
 }
