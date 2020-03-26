@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: vsphere-credentials
-  namespace: broker-test
+#  namespace: broker-test
 stringData:
   username: user
   password: pass

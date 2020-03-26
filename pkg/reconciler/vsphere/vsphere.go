@@ -176,8 +176,6 @@ func (r *Reconciler) reconcileServiceAccount(ctx context.Context, vms *sourcesv1
 	name := resourcenames.ServiceAccount(vms)
 
 	sa, err := r.saLister.ServiceAccounts(ns).Get(name)
-	// Note that we only create the configmap if it does not exist so that we get the
-	// OwnerRefs set up properly so it gets Garbage Collected.
 	if apierrs.IsNotFound(err) {
 		sa = resources.MakeServiceAccount(ctx, vms)
 		sa, err = r.kubeclient.CoreV1().ServiceAccounts(ns).Create(sa)
