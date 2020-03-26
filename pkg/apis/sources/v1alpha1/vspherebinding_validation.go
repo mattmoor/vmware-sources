@@ -14,22 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package v1alpha1
 
 import (
 	"context"
 
-	"github.com/mattmoor/vmware-sources/pkg/vsphere"
-	"k8s.io/client-go/kubernetes"
-	"knative.dev/eventing/pkg/adapter"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	"knative.dev/pkg/injection/sharedmain"
-	"knative.dev/pkg/signals"
+	"knative.dev/pkg/apis"
 )
 
-func main() {
-	ctx := signals.NewContext()
-	kc := kubernetes.NewForConfigOrDie(sharedmain.ParseAndGetConfigOrDie())
-	ctx = context.WithValue(ctx, kubeclient.Key{}, kc)
-	adapter.MainWithContext(ctx, "vspheresource", vsphere.NewEnvConfig, vsphere.NewAdapter)
+// Validate implements apis.Validatable
+func (fb *VSphereBinding) Validate(ctx context.Context) *apis.FieldError {
+	err := fb.Spec.Validate(ctx).ViaField("spec")
+	if fb.Spec.Subject.Namespace != "" && fb.Namespace != fb.Spec.Subject.Namespace {
+		err = err.Also(apis.ErrInvalidValue(fb.Spec.Subject.Namespace, "spec.subject.namespace"))
+	}
+	return err
+}
+
+// Validate implements apis.Validatable
+func (fbs *VSphereBindingSpec) Validate(ctx context.Context) *apis.FieldError {
+	return fbs.Subject.Validate(ctx).ViaField("subject")
 }

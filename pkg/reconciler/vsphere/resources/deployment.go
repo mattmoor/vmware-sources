@@ -18,7 +18,6 @@ package resources
 
 import (
 	"context"
-	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -28,7 +27,6 @@ import (
 
 	"github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
 	"github.com/mattmoor/vmware-sources/pkg/reconciler/vsphere/resources/names"
-	"github.com/mattmoor/vmware-sources/pkg/vsphere"
 )
 
 func MakeDeployment(ctx context.Context, vms *v1alpha1.VSphereSource, adapterImage string) *appsv1.Deployment {
@@ -38,7 +36,7 @@ func MakeDeployment(ctx context.Context, vms *v1alpha1.VSphereSource, adapterIma
 
 	return &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            names.DeploymentName(vms),
+			Name:            names.Deployment(vms),
 			Namespace:       vms.Namespace,
 			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(vms)},
 		},
@@ -68,26 +66,7 @@ func MakeDeployment(ctx context.Context, vms *v1alpha1.VSphereSource, adapterIma
 						}, {
 							Name:  "K_LOGGING_CONFIG",
 							Value: "{}",
-						}, {
-							Name:  "GOVMOMI_ADDRESS",
-							Value: vms.Spec.Address.String(),
-						}, {
-							Name:  "GOVMOMI_INSECURE",
-							Value: fmt.Sprintf("%v", vms.Spec.SkipTLSVerify),
 						}},
-						VolumeMounts: []corev1.VolumeMount{{
-							Name:      vsphere.VolumeName,
-							ReadOnly:  true,
-							MountPath: vsphere.MountPath,
-						}},
-					}},
-					Volumes: []corev1.Volume{{
-						Name: vsphere.VolumeName,
-						VolumeSource: corev1.VolumeSource{
-							Secret: &corev1.SecretVolumeSource{
-								SecretName: vms.Spec.SecretRef.Name,
-							},
-						},
 					}},
 				},
 			},

@@ -18,6 +18,14 @@ limitations under the License.
 
 package v1alpha1
 
+// VSphereBindingListerExpansion allows custom methods to be added to
+// VSphereBindingLister.
+type VSphereBindingListerExpansion interface{}
+
+// VSphereBindingNamespaceListerExpansion allows custom methods to be added to
+// VSphereBindingNamespaceLister.
+type VSphereBindingNamespaceListerExpansion interface{}
+
 // VSphereSourceListerExpansion allows custom methods to be added to
 // VSphereSourceLister.
 type VSphereSourceListerExpansion interface{}

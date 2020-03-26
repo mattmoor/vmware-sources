@@ -36,7 +36,7 @@ import (
 
 const (
 	defaultControllerAgentName = "vspheresource-controller"
-	defaultFinalizerName       = "vspheresources.samples.knative.dev"
+	defaultFinalizerName       = "vspheresources.sources.knative.dev"
 	defaultQueueName           = "vspheresources"
 )
 

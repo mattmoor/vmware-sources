@@ -30,13 +30,13 @@ import (
 
 // FakeVSphereSources implements VSphereSourceInterface
 type FakeVSphereSources struct {
-	Fake *FakeSamplesV1alpha1
+	Fake *FakeSourcesV1alpha1
 	ns   string
 }
 
-var vspheresourcesResource = schema.GroupVersionResource{Group: "samples.knative.dev", Version: "v1alpha1", Resource: "vspheresources"}
+var vspheresourcesResource = schema.GroupVersionResource{Group: "sources.knative.dev", Version: "v1alpha1", Resource: "vspheresources"}
 
-var vspheresourcesKind = schema.GroupVersionKind{Group: "samples.knative.dev", Version: "v1alpha1", Kind: "VSphereSource"}
+var vspheresourcesKind = schema.GroupVersionKind{Group: "sources.knative.dev", Version: "v1alpha1", Kind: "VSphereSource"}
 
 // Get takes name of the vSphereSource, and returns the corresponding vSphereSource object, and an error if there is any.
 func (c *FakeVSphereSources) Get(name string, options v1.GetOptions) (result *v1alpha1.VSphereSource, err error) {

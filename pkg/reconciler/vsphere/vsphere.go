@@ -21,7 +21,9 @@ import (
 	"fmt"
 
 	sourcesv1alpha1 "github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
+	clientset "github.com/mattmoor/vmware-sources/pkg/client/clientset/versioned"
 	vspherereconciler "github.com/mattmoor/vmware-sources/pkg/client/injection/reconciler/sources/v1alpha1/vspheresource"
+	v1alpha1lister "github.com/mattmoor/vmware-sources/pkg/client/listers/sources/v1alpha1"
 	"github.com/mattmoor/vmware-sources/pkg/reconciler/vsphere/resources"
 	resourcenames "github.com/mattmoor/vmware-sources/pkg/reconciler/vsphere/resources/names"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -29,7 +31,7 @@ import (
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
 	cmListers "k8s.io/client-go/listers/core/v1"
 	rbacv1listers "k8s.io/client-go/listers/rbac/v1"
-	clientset "knative.dev/eventing/pkg/client/clientset/versioned"
+	eventingclientset "knative.dev/eventing/pkg/client/clientset/versioned"
 	sourcesv1alpha1lister "knative.dev/eventing/pkg/client/listers/sources/v1alpha1"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/reconciler"
@@ -41,13 +43,14 @@ type Reconciler struct {
 	adapterImage string
 
 	kubeclient     kubernetes.Interface
-	eventingclient clientset.Interface
+	eventingclient eventingclientset.Interface
+	client         clientset.Interface
 
-	deploymentLister  appsv1listers.DeploymentLister
-	sinkbindingLister sourcesv1alpha1lister.SinkBindingLister
-
-	rbacLister rbacv1listers.RoleBindingLister
-	cmLister   cmListers.ConfigMapLister
+	deploymentLister     appsv1listers.DeploymentLister
+	vspherebindingLister v1alpha1lister.VSphereBindingLister
+	sinkbindingLister    sourcesv1alpha1lister.SinkBindingLister
+	rbacLister           rbacv1listers.RoleBindingLister
+	cmLister             cmListers.ConfigMapLister
 }
 
 // Check that our Reconciler implements Interface
@@ -57,14 +60,17 @@ var _ vspherereconciler.Interface = (*Reconciler)(nil)
 func (r *Reconciler) ReconcileKind(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) reconciler.Event {
 	vms.Status.InitializeConditions()
 
+	if err := r.reconcileSinkBinding(ctx, vms); err != nil {
+		return err
+	}
+	if err := r.reconcileVSphereBinding(ctx, vms); err != nil {
+		return err
+	}
+
 	// Make sure the ConfigMap for storing state exists before we
 	// create the deployment so that it gets created as owned
 	// by the source and hence won't be leaked.
 	if err := r.reconcileConfigMap(ctx, vms); err != nil {
-		return err
-	}
-
-	if err := r.reconcileSinkBinding(ctx, vms); err != nil {
 		return err
 	}
 	// Create a service account first, then this rolebinding, then
@@ -81,30 +87,9 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, vms *sourcesv1alpha1.VSp
 	return nil
 }
 
-func (r *Reconciler) reconcileConfigMap(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
-	ns := vms.Namespace
-	name := resourcenames.ConfigMapName(vms)
-
-	cm, err := r.cmLister.ConfigMaps(ns).Get(name)
-	// Note that we only create the configmap if it does not exist so that we get the
-	// OwnerRefs set up properly so it gets Garbage Collected.
-	if apierrs.IsNotFound(err) {
-		cm = resources.MakeConfigMap(ctx, vms)
-		cm, err = r.kubeclient.CoreV1().ConfigMaps(ns).Create(cm)
-		if err != nil {
-			return fmt.Errorf("failed to create configmap %q: %w", name, err)
-		}
-		logging.FromContext(ctx).Infof("Created configmap %q", name)
-	} else if err != nil {
-		return fmt.Errorf("failed to get configmap %q: %w", name, err)
-	}
-
-	return nil
-}
-
 func (r *Reconciler) reconcileSinkBinding(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
 	ns := vms.Namespace
-	sinkbindingName := resourcenames.SinkBindingName(vms)
+	sinkbindingName := resourcenames.SinkBinding(vms)
 
 	sinkbinding, err := r.sinkbindingLister.SinkBindings(ns).Get(sinkbindingName)
 	if apierrs.IsNotFound(err) {
@@ -133,9 +118,61 @@ func (r *Reconciler) reconcileSinkBinding(ctx context.Context, vms *sourcesv1alp
 	return nil
 }
 
+func (r *Reconciler) reconcileVSphereBinding(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
+	ns := vms.Namespace
+	vspherebindingName := resourcenames.VSphereBinding(vms)
+
+	vspherebinding, err := r.vspherebindingLister.VSphereBindings(ns).Get(vspherebindingName)
+	if apierrs.IsNotFound(err) {
+		vspherebinding = resources.MakeVSphereBinding(ctx, vms)
+		vspherebinding, err = r.client.SourcesV1alpha1().VSphereBindings(ns).Create(vspherebinding)
+		if err != nil {
+			return fmt.Errorf("failed to create vspherebinding %q: %w", vspherebindingName, err)
+		}
+		logging.FromContext(ctx).Infof("Created vspherebinding %q", vspherebindingName)
+	} else if err != nil {
+		return fmt.Errorf("failed to get vspherebinding %q: %w", vspherebindingName, err)
+	} else {
+		// The vspherebinding exists, but make sure that it has the shape that we expect.
+		desiredVSphereBinding := resources.MakeVSphereBinding(ctx, vms)
+		vspherebinding = vspherebinding.DeepCopy()
+		vspherebinding.Spec = desiredVSphereBinding.Spec
+		vspherebinding, err = r.client.SourcesV1alpha1().VSphereBindings(ns).Update(vspherebinding)
+		if err != nil {
+			return fmt.Errorf("failed to create vspherebinding %q: %w", vspherebindingName, err)
+		}
+	}
+
+	// Reflect the state of the VSphereBinding in the VSphereSource
+	vms.Status.PropagateAuthStatus(vspherebinding.Status.Status)
+
+	return nil
+}
+
+func (r *Reconciler) reconcileConfigMap(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
+	ns := vms.Namespace
+	name := resourcenames.ConfigMap(vms)
+
+	cm, err := r.cmLister.ConfigMaps(ns).Get(name)
+	// Note that we only create the configmap if it does not exist so that we get the
+	// OwnerRefs set up properly so it gets Garbage Collected.
+	if apierrs.IsNotFound(err) {
+		cm = resources.MakeConfigMap(ctx, vms)
+		cm, err = r.kubeclient.CoreV1().ConfigMaps(ns).Create(cm)
+		if err != nil {
+			return fmt.Errorf("failed to create configmap %q: %w", name, err)
+		}
+		logging.FromContext(ctx).Infof("Created configmap %q", name)
+	} else if err != nil {
+		return fmt.Errorf("failed to get configmap %q: %w", name, err)
+	}
+
+	return nil
+}
+
 func (r *Reconciler) reconcileRoleBinding(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
 	ns := vms.Namespace
-	name := resourcenames.RoleBindingName(vms)
+	name := resourcenames.RoleBinding(vms)
 	roleBinding, err := r.rbacLister.RoleBindings(ns).Get(name)
 	if apierrs.IsNotFound(err) {
 		roleBinding = resources.MakeRoleBinding(ctx, vms)
@@ -153,7 +190,7 @@ func (r *Reconciler) reconcileRoleBinding(ctx context.Context, vms *sourcesv1alp
 
 func (r *Reconciler) reconcileDeployment(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
 	ns := vms.Namespace
-	deploymentName := resourcenames.DeploymentName(vms)
+	deploymentName := resourcenames.Deployment(vms)
 
 	deployment, err := r.deploymentLister.Deployments(ns).Get(deploymentName)
 	if apierrs.IsNotFound(err) {

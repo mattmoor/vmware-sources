@@ -22,18 +22,22 @@ import (
 	"github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
 )
 
-func DeploymentName(vms *v1alpha1.VSphereSource) string {
-	return kmeta.ChildName(vms.Name, "deployment")
+func Deployment(vms *v1alpha1.VSphereSource) string {
+	return kmeta.ChildName(vms.Name, "-deployment")
 }
 
-func SinkBindingName(vms *v1alpha1.VSphereSource) string {
-	return kmeta.ChildName(vms.Name, "sinkbinding")
+func SinkBinding(vms *v1alpha1.VSphereSource) string {
+	return kmeta.ChildName(vms.Name, "-sinkbinding")
 }
 
-func ConfigMapName(vms *v1alpha1.VSphereSource) string {
+func VSphereBinding(vms *v1alpha1.VSphereSource) string {
+	return kmeta.ChildName(vms.Name, "-vspherebinding")
+}
+
+func ConfigMap(vms *v1alpha1.VSphereSource) string {
 	return kmeta.ChildName(vms.Name, "configmap")
 }
 
-func RoleBindingName(vms *v1alpha1.VSphereSource) string {
+func RoleBinding(vms *v1alpha1.VSphereSource) string {
 	return kmeta.ChildName(vms.Name, "rolebinding")
 }

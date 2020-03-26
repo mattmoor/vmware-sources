@@ -23,11 +23,12 @@ import (
 )
 
 // Validate implements apis.Validatable
-func (as *VSphereSource) Validate(ctx context.Context) *apis.FieldError {
-	return as.Spec.Validate(ctx).ViaField("spec")
+func (fb *VSphereSource) Validate(ctx context.Context) *apis.FieldError {
+	return fb.Spec.Validate(ctx).ViaField("spec")
 }
 
 // Validate implements apis.Validatable
-func (ass *VSphereSourceSpec) Validate(ctx context.Context) *apis.FieldError {
-	return nil
+func (fbs *VSphereSourceSpec) Validate(ctx context.Context) *apis.FieldError {
+	// TODO(mattmoor): Check other properties, e.g. secret
+	return fbs.Sink.Validate(ctx).ViaField("sink")
 }

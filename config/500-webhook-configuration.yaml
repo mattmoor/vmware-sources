@@ -72,3 +72,20 @@ metadata:
   labels:
     sources.knative.dev/release: devel
 # The data is populated at install time.
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: vspherebindings.webhook.vmware-sources.knative.dev
+  labels:
+    eventing.knative.dev/release: devel
+webhooks:
+- admissionReviewVersions:
+  - v1beta1
+  clientConfig:
+    service:
+      name: webhook
+      namespace: vmware-sources
+  failurePolicy: Fail
+  sideEffects: None
+  name: vspherebindings.webhook.vmware-sources.knative.dev

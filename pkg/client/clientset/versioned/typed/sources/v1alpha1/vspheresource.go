@@ -56,7 +56,7 @@ type vSphereSources struct {
 }
 
 // newVSphereSources returns a VSphereSources
-func newVSphereSources(c *SamplesV1alpha1Client, namespace string) *vSphereSources {
+func newVSphereSources(c *SourcesV1alpha1Client, namespace string) *vSphereSources {
 	return &vSphereSources{
 		client: c.RESTClient(),
 		ns:     namespace,

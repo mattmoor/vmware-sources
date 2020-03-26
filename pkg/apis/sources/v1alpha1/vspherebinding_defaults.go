@@ -14,22 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package v1alpha1
 
 import (
 	"context"
-
-	"github.com/mattmoor/vmware-sources/pkg/vsphere"
-	"k8s.io/client-go/kubernetes"
-	"knative.dev/eventing/pkg/adapter"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
-	"knative.dev/pkg/injection/sharedmain"
-	"knative.dev/pkg/signals"
 )
 
-func main() {
-	ctx := signals.NewContext()
-	kc := kubernetes.NewForConfigOrDie(sharedmain.ParseAndGetConfigOrDie())
-	ctx = context.WithValue(ctx, kubeclient.Key{}, kc)
-	adapter.MainWithContext(ctx, "vspheresource", vsphere.NewEnvConfig, vsphere.NewAdapter)
+// SetDefaults implements apis.Defaultable
+func (as *VSphereBinding) SetDefaults(ctx context.Context) {
+	if as.Spec.Subject.Namespace == "" {
+		// Default the subject's namespace to our namespace.
+		as.Spec.Subject.Namespace = as.Namespace
+	}
 }
