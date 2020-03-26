@@ -4,8 +4,7 @@ metadata:
   name: receive-adapter-cm-reader
 rules:
 - apiGroups: [""]
-  #
-  # at the HTTP level, the name of the resource for accessing Secret
-  # objects is "secrets"
+  # We need to create/update/get ConfigMaps so that the
+  # receiveadapter can store state for checkpointing.
   resources: ["configmaps"]
   verbs: ["create", "update", "get"]
