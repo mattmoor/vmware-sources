@@ -79,6 +79,9 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		logger.Fatalf("NIL kubeclient")
 	}
 
+	// TODO: configmap name needs to be passed in the env, or the name of the source needs to
+	// plumbed in so we can derive it here.
+	// https://github.com/mattmoor/vmware-sources/issues/8
 	kvstore := kvstore.NewConfigMapKVStore(ctx, "test", env.Namespace, kubeclient.(*kubernetes.Clientset).CoreV1())
 	err = kvstore.Init(ctx)
 	if err != nil {
