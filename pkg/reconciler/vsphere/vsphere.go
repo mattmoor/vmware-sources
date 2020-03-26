@@ -25,6 +25,7 @@ import (
 	"github.com/mattmoor/vmware-sources/pkg/reconciler/vsphere/resources"
 	resourcenames "github.com/mattmoor/vmware-sources/pkg/reconciler/vsphere/resources/names"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
 	clientset "knative.dev/eventing/pkg/client/clientset/versioned"
@@ -56,6 +57,10 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, vms *sourcesv1alpha1.VSp
 		return err
 	}
 	if err := r.reconcileDeployment(ctx, vms); err != nil {
+		return err
+	}
+
+	if err := r.reconcileRoleBinding(ctx, vms); err != nil {
 		return err
 	}
 
@@ -91,6 +96,26 @@ func (r *Reconciler) reconcileSinkBinding(ctx context.Context, vms *sourcesv1alp
 	// Reflect the state of the SinkBinding in the VSphereSource
 	vms.Status.PropagateSourceStatus(sinkbinding.Status.SourceStatus)
 
+	return nil
+}
+
+func (r *Reconciler) reconcileRoleBinding(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
+	ns := vms.Namespace
+	roleBindingName := vms.Name
+	// TODO: plumb through lister
+	//	roleBinding, err := r.confimapLister.Configmaps(ns).Get(rolebindingName)
+	roleBinding, err := r.kubeclient.RbacV1().RoleBindings(ns).Get(roleBindingName, metav1.GetOptions{})
+	if apierrs.IsNotFound(err) {
+		roleBinding = resources.MakeRoleBinding(ctx, vms, roleBindingName, ns)
+		roleBinding, err = r.kubeclient.RbacV1().RoleBindings(ns).Create(roleBinding)
+		if err != nil {
+			return fmt.Errorf("failed to create rolebinding %q: %w", roleBindingName, err)
+		}
+		logging.FromContext(ctx).Infof("Created rolebinding %q", roleBindingName)
+	} else if err != nil {
+		return fmt.Errorf("failed to get rolebinding %q: %w", roleBindingName, err)
+	}
+	// TODO: diff the roleref / subjects and update as necessary.
 	return nil
 }
 

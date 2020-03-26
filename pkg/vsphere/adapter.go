@@ -27,11 +27,15 @@ import (
 	"github.com/vmware/govmomi/event"
 	"github.com/vmware/govmomi/vim25/types"
 	"go.uber.org/zap"
+
+	"k8s.io/client-go/kubernetes"
 	"knative.dev/eventing/pkg/adapter"
+	"knative.dev/pkg/kvstore"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/source"
 
 	sourcesv1alpha1 "github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
+	"github.com/mattmoor/vmware-sources/pkg/client/injection/client"
 )
 
 var groupResource = sourcesv1alpha1.Resource("vspheresources")
@@ -52,6 +56,7 @@ type vAdapter struct {
 	VClient   *govmomi.Client
 	CEClient  cloudevents.Client
 	Reporter  source.StatsReporter
+	KVStore   kvstore.Interface
 }
 
 func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClient cloudevents.Client, reporter source.StatsReporter) adapter.Adapter {
@@ -69,6 +74,17 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		logger.Fatalf("Unable to determine source: %v", err)
 	}
 
+	kubeclient := ctx.Value(client.Key{})
+	if kubeclient == nil {
+		logger.Fatalf("NIL kubeclient")
+	}
+
+	kvstore := kvstore.NewConfigMapKVStore(ctx, "test", env.Namespace, kubeclient.(*kubernetes.Clientset).CoreV1())
+	err = kvstore.Init(ctx)
+	if err != nil {
+		logger.Fatalf("couldn't initialize kv store: %v", err)
+	}
+
 	return &vAdapter{
 		Logger:    logger,
 		Namespace: env.Namespace,
@@ -76,6 +92,7 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		Reporter:  reporter,
 		VClient:   vClient,
 		CEClient:  ceClient,
+		KVStore:   kvstore,
 	}
 }
 
