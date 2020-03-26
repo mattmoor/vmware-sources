@@ -35,6 +35,7 @@ import (
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
 	cminformer "knative.dev/pkg/client/injection/kube/informers/core/v1/configmap"
+	sainformer "knative.dev/pkg/client/injection/kube/informers/core/v1/serviceaccount"
 	rbacinformer "knative.dev/pkg/client/injection/kube/informers/rbac/v1/rolebinding"
 )
 
@@ -51,6 +52,7 @@ func NewController(
 	rbacInformer := rbacinformer.Get(ctx)
 	cmInformer := cminformer.Get(ctx)
 	vspherebindingInformer := vspherebindinginformer.Get(ctx)
+	saInformer := sainformer.Get(ctx)
 
 	r := &Reconciler{
 		adapterImage:         os.Getenv("VSPHERE_ADAPTER"),
@@ -62,6 +64,7 @@ func NewController(
 		sinkbindingLister:    sinkbindingInformer.Lister(),
 		cmLister:             cmInformer.Lister(),
 		rbacLister:           rbacInformer.Lister(),
+		saLister:             saInformer.Lister(),
 	}
 	impl := vspherereconciler.NewImpl(ctx, r)
 
@@ -70,6 +73,11 @@ func NewController(
 	vsphereInformer.Informer().AddEventHandler(controller.HandleAll(impl.Enqueue))
 
 	deploymentInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
+		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+	})
+
+	saInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
