@@ -26,6 +26,8 @@ import (
 	"knative.dev/pkg/logging"
 
 	"github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
+	"github.com/mattmoor/vmware-sources/pkg/client/injection/client"
+	vspherebindinginformer "github.com/mattmoor/vmware-sources/pkg/client/injection/informers/sources/v1alpha1/vspherebinding"
 	vsphereinformer "github.com/mattmoor/vmware-sources/pkg/client/injection/informers/sources/v1alpha1/vspheresource"
 	vspherereconciler "github.com/mattmoor/vmware-sources/pkg/client/injection/reconciler/sources/v1alpha1/vspheresource"
 	eventingclient "knative.dev/eventing/pkg/client/injection/client"
@@ -48,15 +50,18 @@ func NewController(
 	sinkbindingInformer := sinkbindinginformer.Get(ctx)
 	rbacInformer := rbacinformer.Get(ctx)
 	cmInformer := cminformer.Get(ctx)
+	vspherebindingInformer := vspherebindinginformer.Get(ctx)
 
 	r := &Reconciler{
-		adapterImage:      os.Getenv("VSPHERE_ADAPTER"),
-		kubeclient:        kubeclient.Get(ctx),
-		eventingclient:    eventingclient.Get(ctx),
-		deploymentLister:  deploymentInformer.Lister(),
-		sinkbindingLister: sinkbindingInformer.Lister(),
-		cmLister:          cmInformer.Lister(),
-		rbacLister:        rbacInformer.Lister(),
+		adapterImage:         os.Getenv("VSPHERE_ADAPTER"),
+		kubeclient:           kubeclient.Get(ctx),
+		eventingclient:       eventingclient.Get(ctx),
+		client:               client.Get(ctx),
+		deploymentLister:     deploymentInformer.Lister(),
+		vspherebindingLister: vspherebindingInformer.Lister(),
+		sinkbindingLister:    sinkbindingInformer.Lister(),
+		cmLister:             cmInformer.Lister(),
+		rbacLister:           rbacInformer.Lister(),
 	}
 	impl := vspherereconciler.NewImpl(ctx, r)
 
@@ -69,7 +74,24 @@ func NewController(
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})
 
+	rbacInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
+		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+	})
+
+	// Don't trigger off of CM updates because we don't care about the content
+	// and it is high churn.
+	// cmInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+	// 	FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
+	// 	Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+	// })
+
 	sinkbindingInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
+		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
+		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
+	})
+
+	vspherebindingInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
 		Handler:    controller.HandleAll(impl.EnqueueControllerOf),
 	})

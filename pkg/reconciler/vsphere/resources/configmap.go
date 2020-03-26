@@ -30,7 +30,7 @@ import (
 func MakeConfigMap(ctx context.Context, vms *v1alpha1.VSphereSource) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:            names.ConfigMapName(vms),
+			Name:            names.ConfigMap(vms),
 			Namespace:       vms.Namespace,
 			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(vms)},
 		},

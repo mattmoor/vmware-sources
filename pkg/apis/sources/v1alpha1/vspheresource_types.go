@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"knative.dev/pkg/apis"
 	duckv1 "knative.dev/pkg/apis/duck/v1"
@@ -53,17 +52,7 @@ var _ kmeta.OwnerRefable = (*VSphereSource)(nil)
 type VSphereSourceSpec struct {
 	duckv1.SourceSpec `json:",inline"`
 
-	// Address contains the URL of the vSphere API.
-	Address apis.URL `json:"address"`
-
-	// SkipTLSVerify specifies whether the client should skip TLS verification when
-	// talking to the vsphere address.
-	SkipTLSVerify bool `json:"skipTLSVerify,omitempty"`
-
-	// SecretRef is a reference to a Kubernetes secret of type kubernetes.io/basic-auth
-	// which contains keys for "username" and "password", which will be used to authenticate
-	//  with the vSphere API at "address".
-	SecretRef corev1.LocalObjectReference `json:"secretRef"`
+	VAuthSpec `json:",inline"`
 }
 
 const (
@@ -72,6 +61,9 @@ const (
 
 	// VSphereSourceConditionSourceReady is set to reflect the state of the source part of the VSphereSource.
 	VSphereSourceConditionSourceReady = "SourceReady"
+
+	// VSphereSourceConditionAuthReady is set to reflect the state of the auth part of the VSphereSource.
+	VSphereSourceConditionAuthReady = "AuthReady"
 
 	// VSphereSourceConditionAdapterReady is set to reflect the state of the adapter part of the VSphereSource.
 	VSphereSourceConditionAdapterReady = "AdapterReady"

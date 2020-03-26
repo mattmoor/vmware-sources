@@ -46,12 +46,28 @@ func (ass *VSphereSourceStatus) PropagateSourceStatus(status duckv1.SourceStatus
 
 	cond := status.GetCondition(apis.ConditionReady)
 	switch {
-	case cond == nil, cond.Status == corev1.ConditionUnknown:
+	case cond == nil:
+		condSet.Manage(ass).MarkUnknown(VSphereSourceConditionSourceReady, "", "")
+	case cond.Status == corev1.ConditionUnknown:
 		condSet.Manage(ass).MarkUnknown(VSphereSourceConditionSourceReady, cond.Reason, cond.Message)
 	case cond.Status == corev1.ConditionFalse:
 		condSet.Manage(ass).MarkFalse(VSphereSourceConditionSourceReady, cond.Reason, cond.Message)
 	case cond.Status == corev1.ConditionTrue:
 		condSet.Manage(ass).MarkTrue(VSphereSourceConditionSourceReady)
+	}
+}
+
+func (ass *VSphereSourceStatus) PropagateAuthStatus(status duckv1.Status) {
+	cond := status.GetCondition(apis.ConditionReady)
+	switch {
+	case cond == nil:
+		condSet.Manage(ass).MarkUnknown(VSphereSourceConditionAuthReady, "", "")
+	case cond.Status == corev1.ConditionUnknown:
+		condSet.Manage(ass).MarkUnknown(VSphereSourceConditionAuthReady, cond.Reason, cond.Message)
+	case cond.Status == corev1.ConditionFalse:
+		condSet.Manage(ass).MarkFalse(VSphereSourceConditionAuthReady, cond.Reason, cond.Message)
+	case cond.Status == corev1.ConditionTrue:
+		condSet.Manage(ass).MarkTrue(VSphereSourceConditionAuthReady)
 	}
 }
 

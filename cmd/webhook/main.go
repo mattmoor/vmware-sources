@@ -19,10 +19,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"knative.dev/pkg/configmap"
 	"knative.dev/pkg/controller"
+	"knative.dev/pkg/injection"
 	"knative.dev/pkg/injection/sharedmain"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/metrics"
@@ -31,16 +33,19 @@ import (
 	"knative.dev/pkg/webhook"
 	"knative.dev/pkg/webhook/certificates"
 	"knative.dev/pkg/webhook/configmaps"
+	"knative.dev/pkg/webhook/psbinding"
 	"knative.dev/pkg/webhook/resourcesemantics"
 	"knative.dev/pkg/webhook/resourcesemantics/defaulting"
 	"knative.dev/pkg/webhook/resourcesemantics/validation"
 
 	"github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
+	"github.com/mattmoor/vmware-sources/pkg/reconciler/vspherebinding"
 )
 
 var types = map[schema.GroupVersionKind]resourcesemantics.GenericCRD{
 	// List the types to validate.
-	v1alpha1.SchemeGroupVersion.WithKind("VSphereSource"): &v1alpha1.VSphereSource{},
+	v1alpha1.SchemeGroupVersion.WithKind("VSphereSource"):  &v1alpha1.VSphereSource{},
+	v1alpha1.SchemeGroupVersion.WithKind("VSphereBinding"): &v1alpha1.VSphereBinding{},
 }
 
 func NewDefaultingAdmissionController(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
@@ -108,6 +113,29 @@ func NewConfigValidationController(ctx context.Context, cmw configmap.Watcher) *
 	)
 }
 
+func NewVSphereBindingWebhook(opts ...psbinding.ReconcilerOption) injection.ControllerConstructor {
+	return func(ctx context.Context, cmw configmap.Watcher) *controller.Impl {
+		return psbinding.NewAdmissionController(ctx,
+			// Name of the resource webhook.
+			fmt.Sprintf("vspherebindings.webhook.%s.knative.dev", system.Namespace()),
+
+			// The path on which to serve the webhook.
+			"/vspherebindings",
+
+			// How to get all the Bindables for configuring the mutating webhook.
+			vspherebinding.ListAll,
+
+			// A function that infuses the context passed to Validate/SetDefaults with custom metadata.
+			func(ctx context.Context, _ psbinding.Bindable) (context.Context, error) {
+				// Here is where you would infuse the context with state
+				// (e.g. attach a store with configmap data)
+				return ctx, nil
+			},
+			opts...,
+		)
+	}
+}
+
 func main() {
 	ctx := webhook.WithOptions(signals.NewContext(), webhook.Options{
 		ServiceName: "webhook",
@@ -115,10 +143,18 @@ func main() {
 		SecretName:  "webhook-certs",
 	})
 
+	vsbSelector := psbinding.WithSelector(psbinding.ExclusionSelector)
+	if os.Getenv("VSPHERE_BINDING_SELECTION_MODE") == "inclusion" {
+		vsbSelector = psbinding.WithSelector(psbinding.InclusionSelector)
+	}
+
 	sharedmain.WebhookMainWithConfig(ctx, "webhook", sharedmain.ParseAndGetConfigOrDie(),
 		certificates.NewController,
 		NewDefaultingAdmissionController,
 		NewValidationAdmissionController,
 		NewConfigValidationController,
+
+		// For each binding we have a controller and a binding webhook.
+		vspherebinding.NewController, NewVSphereBindingWebhook(vsbSelector),
 	)
 }

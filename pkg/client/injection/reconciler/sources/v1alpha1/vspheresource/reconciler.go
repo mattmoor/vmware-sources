@@ -207,7 +207,7 @@ func (r *reconcilerImpl) updateStatus(existing *v1alpha1.VSphereSource, desired 
 		// The first iteration tries to use the injectionInformer's state, subsequent attempts fetch the latest state via API.
 		if attempts > 0 {
 
-			getter := r.Client.SamplesV1alpha1().VSphereSources(desired.Namespace)
+			getter := r.Client.SourcesV1alpha1().VSphereSources(desired.Namespace)
 
 			existing, err = getter.Get(desired.Name, metav1.GetOptions{})
 			if err != nil {
@@ -222,7 +222,7 @@ func (r *reconcilerImpl) updateStatus(existing *v1alpha1.VSphereSource, desired 
 
 		existing.Status = desired.Status
 
-		updater := r.Client.SamplesV1alpha1().VSphereSources(existing.Namespace)
+		updater := r.Client.SourcesV1alpha1().VSphereSources(existing.Namespace)
 
 		_, err = updater.UpdateStatus(existing)
 		return err
@@ -280,7 +280,7 @@ func (r *reconcilerImpl) updateFinalizersFiltered(ctx context.Context, resource 
 		return resource, err
 	}
 
-	patcher := r.Client.SamplesV1alpha1().VSphereSources(resource.Namespace)
+	patcher := r.Client.SourcesV1alpha1().VSphereSources(resource.Namespace)
 
 	resource, err = patcher.Patch(resource.Name, types.MergePatchType, patch)
 	if err != nil {

@@ -37,7 +37,7 @@ func MakeRoleBinding(ctx context.Context, vms *v1alpha1.VSphereSource) *rbacv1.R
 	return &rbacv1.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
 			OwnerReferences: []metav1.OwnerReference{*kmeta.NewControllerRef(vms)},
-			Name:            names.RoleBindingName(vms),
+			Name:            names.RoleBinding(vms),
 			Namespace:       vms.Namespace,
 		},
 		RoleRef: rbacv1.RoleRef{
@@ -45,12 +45,10 @@ func MakeRoleBinding(ctx context.Context, vms *v1alpha1.VSphereSource) *rbacv1.R
 			Kind:     "ClusterRole",
 			Name:     "receive-adapter-cm-reader",
 		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Namespace: vms.Namespace,
-				Name:      "default",
-			},
-		},
+		Subjects: []rbacv1.Subject{{
+			Kind:      "ServiceAccount",
+			Namespace: vms.Namespace,
+			Name:      "default",
+		}},
 	}
 }

@@ -28,17 +28,12 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 	"go.uber.org/zap"
 
-	"k8s.io/client-go/kubernetes"
 	"knative.dev/eventing/pkg/adapter"
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/kvstore"
 	"knative.dev/pkg/logging"
 	"knative.dev/pkg/source"
-
-	sourcesv1alpha1 "github.com/mattmoor/vmware-sources/pkg/apis/sources/v1alpha1"
-	"github.com/mattmoor/vmware-sources/pkg/client/injection/client"
 )
-
-var groupResource = sourcesv1alpha1.Resource("vspheresources")
 
 type envConfig struct {
 	adapter.EnvConfig
@@ -74,15 +69,10 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		logger.Fatalf("Unable to determine source: %v", err)
 	}
 
-	kubeclient := ctx.Value(client.Key{})
-	if kubeclient == nil {
-		logger.Fatalf("NIL kubeclient")
-	}
-
 	// TODO: configmap name needs to be passed in the env, or the name of the source needs to
 	// plumbed in so we can derive it here.
 	// https://github.com/mattmoor/vmware-sources/issues/8
-	kvstore := kvstore.NewConfigMapKVStore(ctx, "test", env.Namespace, kubeclient.(*kubernetes.Clientset).CoreV1())
+	kvstore := kvstore.NewConfigMapKVStore(ctx, "test", env.Namespace, kubeclient.Get(ctx).CoreV1())
 	err = kvstore.Init(ctx)
 	if err != nil {
 		logger.Fatalf("couldn't initialize kv store: %v", err)
@@ -149,7 +139,7 @@ func (a *vAdapter) sendEvents(ctx context.Context) func(moref types.ManagedObjec
 				Namespace:     a.Namespace,
 				EventSource:   event.Source(),
 				EventType:     event.Type(),
-				ResourceGroup: groupResource.String(),
+				ResourceGroup: "vspheresources.sources.knateve.dev",
 			}, rtctx.StatusCode)
 		}
 

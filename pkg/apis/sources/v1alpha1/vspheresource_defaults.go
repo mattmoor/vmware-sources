@@ -18,9 +18,12 @@ package v1alpha1
 
 import (
 	"context"
+
+	"knative.dev/pkg/apis"
 )
 
 // SetDefaults implements apis.Defaultable
 func (as *VSphereSource) SetDefaults(ctx context.Context) {
-	// Nothing to default.
+	withNS := apis.WithinParent(ctx, as.ObjectMeta)
+	as.Spec.Sink.SetDefaults(withNS)
 }

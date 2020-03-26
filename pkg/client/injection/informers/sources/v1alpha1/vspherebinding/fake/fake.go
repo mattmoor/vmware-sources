@@ -22,12 +22,12 @@ import (
 	context "context"
 
 	fake "github.com/mattmoor/vmware-sources/pkg/client/injection/informers/factory/fake"
-	vspheresource "github.com/mattmoor/vmware-sources/pkg/client/injection/informers/sources/v1alpha1/vspheresource"
+	vspherebinding "github.com/mattmoor/vmware-sources/pkg/client/injection/informers/sources/v1alpha1/vspherebinding"
 	controller "knative.dev/pkg/controller"
 	injection "knative.dev/pkg/injection"
 )
 
-var Get = vspheresource.Get
+var Get = vspherebinding.Get
 
 func init() {
 	injection.Fake.RegisterInformer(withInformer)
@@ -35,6 +35,6 @@ func init() {
 
 func withInformer(ctx context.Context) (context.Context, controller.Informer) {
 	f := fake.Get(ctx)
-	inf := f.Sources().V1alpha1().VSphereSources()
-	return context.WithValue(ctx, vspheresource.Key{}, inf), inf.Informer()
+	inf := f.Sources().V1alpha1().VSphereBindings()
+	return context.WithValue(ctx, vspherebinding.Key{}, inf), inf.Informer()
 }
