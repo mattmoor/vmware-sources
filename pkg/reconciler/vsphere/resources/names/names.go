@@ -35,9 +35,9 @@ func VSphereBinding(vms *v1alpha1.VSphereSource) string {
 }
 
 func ConfigMap(vms *v1alpha1.VSphereSource) string {
-	return kmeta.ChildName(vms.Name, "configmap")
+	return kmeta.ChildName(vms.Name, "-configmap")
 }
 
 func RoleBinding(vms *v1alpha1.VSphereSource) string {
-	return kmeta.ChildName(vms.Name, "rolebinding")
+	return kmeta.ChildName(vms.Name, "-rolebinding")
 }
