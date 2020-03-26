@@ -66,27 +66,8 @@ func MakeDeployment(ctx context.Context, vms *v1alpha1.VSphereSource, adapterIma
 						}, {
 							Name:  "K_LOGGING_CONFIG",
 							Value: "{}",
-							// }, {
-							// 	Name:  "GOVMOMI_ADDRESS",
-							// 	Value: vms.Spec.Address.String(),
-							// }, {
-							// 	Name:  "GOVMOMI_INSECURE",
-							// 	Value: fmt.Sprintf("%v", vms.Spec.SkipTLSVerify),
 						}},
-						// VolumeMounts: []corev1.VolumeMount{{
-						// 	Name:      vsphere.VolumeName,
-						// 	ReadOnly:  true,
-						// 	MountPath: vsphere.MountPath,
-						// }},
 					}},
-					// Volumes: []corev1.Volume{{
-					// 	Name: vsphere.VolumeName,
-					// 	VolumeSource: corev1.VolumeSource{
-					// 		Secret: &corev1.SecretVolumeSource{
-					// 			SecretName: vms.Spec.SecretRef.Name,
-					// 		},
-					// 	},
-					// }},
 				},
 			},
 		},

@@ -81,10 +81,6 @@ func NewController(
 
 	// Don't trigger off of CM updates because we don't care about the content
 	// and it is high churn.
-	// cmInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
-	// 	FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
-	// 	Handler:    controller.HandleAll(impl.EnqueueControllerOf),
-	// })
 
 	sinkbindingInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: controller.FilterGroupKind(v1alpha1.Kind("VSphereSource")),
