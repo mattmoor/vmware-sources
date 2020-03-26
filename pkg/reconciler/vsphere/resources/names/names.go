@@ -29,3 +29,11 @@ func DeploymentName(vms *v1alpha1.VSphereSource) string {
 func SinkBindingName(vms *v1alpha1.VSphereSource) string {
 	return kmeta.ChildName(vms.Name, "sinkbinding")
 }
+
+func ConfigMapName(vms *v1alpha1.VSphereSource) string {
+	return kmeta.ChildName(vms.Name, "configmap")
+}
+
+func RoleBindingName(vms *v1alpha1.VSphereSource) string {
+	return kmeta.ChildName(vms.Name, "rolebinding")
+}

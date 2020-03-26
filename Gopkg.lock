@@ -1280,7 +1280,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b866a374c5f954ec0830aa3c31962f4f8777624a77eba2b99fb19c732d5c2452"
+  digest = "1:664207d75dbcaeab206d93b3dcd8098c59e3b6b21378af02d686579e491fc859"
   name = "knative.dev/pkg"
   packages = [
     "apis",
@@ -1305,6 +1305,7 @@
     "injection/sharedmain",
     "kmeta",
     "kmp",
+    "kvstore",
     "leaderelection",
     "logging",
     "logging/logkey",
@@ -1329,7 +1330,7 @@
     "webhook/resourcesemantics/validation",
   ]
   pruneopts = "T"
-  revision = "aa5b1f2211ac4a538128a4a4e03797e9232b0431"
+  revision = "8a6d25b30970038d1e24ddf5f6e0cec129c9564c"
 
 [[projects]]
   branch = "master"
@@ -1364,6 +1365,7 @@
     "go.uber.org/zap",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
+    "k8s.io/api/rbac/v1",
     "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
@@ -1409,6 +1411,7 @@
     "knative.dev/pkg/injection",
     "knative.dev/pkg/injection/sharedmain",
     "knative.dev/pkg/kmeta",
+    "knative.dev/pkg/kvstore",
     "knative.dev/pkg/logging",
     "knative.dev/pkg/metrics",
     "knative.dev/pkg/ptr",

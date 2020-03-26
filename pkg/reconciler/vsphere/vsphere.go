@@ -27,6 +27,8 @@ import (
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 	appsv1listers "k8s.io/client-go/listers/apps/v1"
+	cmListers "k8s.io/client-go/listers/core/v1"
+	rbacv1listers "k8s.io/client-go/listers/rbac/v1"
 	clientset "knative.dev/eventing/pkg/client/clientset/versioned"
 	sourcesv1alpha1lister "knative.dev/eventing/pkg/client/listers/sources/v1alpha1"
 	"knative.dev/pkg/logging"
@@ -43,6 +45,9 @@ type Reconciler struct {
 
 	deploymentLister  appsv1listers.DeploymentLister
 	sinkbindingLister sourcesv1alpha1lister.SinkBindingLister
+
+	rbacLister rbacv1listers.RoleBindingLister
+	cmLister   cmListers.ConfigMapLister
 }
 
 // Check that our Reconciler implements Interface
@@ -52,7 +57,20 @@ var _ vspherereconciler.Interface = (*Reconciler)(nil)
 func (r *Reconciler) ReconcileKind(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) reconciler.Event {
 	vms.Status.InitializeConditions()
 
+	// Make sure the ConfigMap for storing state exists before we
+	// create the deployment so that it gets created as owned
+	// by the source and hence won't be leaked.
+	if err := r.reconcileConfigMap(ctx, vms); err != nil {
+		return err
+	}
+
 	if err := r.reconcileSinkBinding(ctx, vms); err != nil {
+		return err
+	}
+	// Create a service account first, then this rolebinding, then
+	// pass that to deployment to run as.
+	// https://github.com/mattmoor/vmware-sources/issues/9
+	if err := r.reconcileRoleBinding(ctx, vms); err != nil {
 		return err
 	}
 	if err := r.reconcileDeployment(ctx, vms); err != nil {
@@ -60,6 +78,27 @@ func (r *Reconciler) ReconcileKind(ctx context.Context, vms *sourcesv1alpha1.VSp
 	}
 
 	vms.Status.ObservedGeneration = vms.Generation
+	return nil
+}
+
+func (r *Reconciler) reconcileConfigMap(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
+	ns := vms.Namespace
+	name := resourcenames.ConfigMapName(vms)
+
+	cm, err := r.cmLister.ConfigMaps(ns).Get(name)
+	// Note that we only create the configmap if it does not exist so that we get the
+	// OwnerRefs set up properly so it gets Garbage Collected.
+	if apierrs.IsNotFound(err) {
+		cm = resources.MakeConfigMap(ctx, vms)
+		cm, err = r.kubeclient.CoreV1().ConfigMaps(ns).Create(cm)
+		if err != nil {
+			return fmt.Errorf("failed to create configmap %q: %w", name, err)
+		}
+		logging.FromContext(ctx).Infof("Created configmap %q", name)
+	} else if err != nil {
+		return fmt.Errorf("failed to get configmap %q: %w", name, err)
+	}
+
 	return nil
 }
 
@@ -91,6 +130,24 @@ func (r *Reconciler) reconcileSinkBinding(ctx context.Context, vms *sourcesv1alp
 	// Reflect the state of the SinkBinding in the VSphereSource
 	vms.Status.PropagateSourceStatus(sinkbinding.Status.SourceStatus)
 
+	return nil
+}
+
+func (r *Reconciler) reconcileRoleBinding(ctx context.Context, vms *sourcesv1alpha1.VSphereSource) error {
+	ns := vms.Namespace
+	name := resourcenames.RoleBindingName(vms)
+	roleBinding, err := r.rbacLister.RoleBindings(ns).Get(name)
+	if apierrs.IsNotFound(err) {
+		roleBinding = resources.MakeRoleBinding(ctx, vms)
+		roleBinding, err = r.kubeclient.RbacV1().RoleBindings(ns).Create(roleBinding)
+		if err != nil {
+			return fmt.Errorf("failed to create rolebinding %q: %w", name, err)
+		}
+		logging.FromContext(ctx).Infof("Created rolebinding %q", name)
+	} else if err != nil {
+		return fmt.Errorf("failed to get rolebinding %q: %w", name, err)
+	}
+	// TODO: diff the roleref / subjects and update as necessary.
 	return nil
 }
 

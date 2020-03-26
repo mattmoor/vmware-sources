@@ -17,10 +17,21 @@ limitations under the License.
 package main
 
 import (
+	"context"
+
+	"github.com/mattmoor/vmware-sources/pkg/client/injection/client"
 	"github.com/mattmoor/vmware-sources/pkg/vsphere"
+
+	"k8s.io/client-go/kubernetes"
+
 	"knative.dev/eventing/pkg/adapter"
+	"knative.dev/pkg/injection/sharedmain"
+	"knative.dev/pkg/signals"
 )
 
 func main() {
-	adapter.Main("vspheresource", vsphere.NewEnvConfig, vsphere.NewAdapter)
+	ctx := signals.NewContext()
+	kubeclient := kubernetes.NewForConfigOrDie(sharedmain.ParseAndGetConfigOrDie())
+	ctx = context.WithValue(ctx, client.Key{}, kubeclient)
+	adapter.MainWithContext(ctx, "vspheresource", vsphere.NewEnvConfig, vsphere.NewAdapter)
 }

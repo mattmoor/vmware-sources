@@ -32,6 +32,8 @@ import (
 	sinkbindinginformer "knative.dev/eventing/pkg/client/injection/informers/sources/v1alpha1/sinkbinding"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	deploymentinformer "knative.dev/pkg/client/injection/kube/informers/apps/v1/deployment"
+	cminformer "knative.dev/pkg/client/injection/kube/informers/core/v1/configmap"
+	rbacinformer "knative.dev/pkg/client/injection/kube/informers/rbac/v1/rolebinding"
 )
 
 // NewController creates a Reconciler and returns the result of NewImpl.
@@ -44,6 +46,8 @@ func NewController(
 	vsphereInformer := vsphereinformer.Get(ctx)
 	deploymentInformer := deploymentinformer.Get(ctx)
 	sinkbindingInformer := sinkbindinginformer.Get(ctx)
+	rbacInformer := rbacinformer.Get(ctx)
+	cmInformer := cminformer.Get(ctx)
 
 	r := &Reconciler{
 		adapterImage:      os.Getenv("VSPHERE_ADAPTER"),
@@ -51,6 +55,8 @@ func NewController(
 		eventingclient:    eventingclient.Get(ctx),
 		deploymentLister:  deploymentInformer.Lister(),
 		sinkbindingLister: sinkbindingInformer.Lister(),
+		cmLister:          cmInformer.Lister(),
+		rbacLister:        rbacInformer.Lister(),
 	}
 	impl := vspherereconciler.NewImpl(ctx, r)
 
