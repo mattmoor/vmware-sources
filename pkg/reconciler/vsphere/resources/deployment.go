@@ -66,6 +66,9 @@ func MakeDeployment(ctx context.Context, vms *v1alpha1.VSphereSource, adapterIma
 						}, {
 							Name:  "K_LOGGING_CONFIG",
 							Value: "{}",
+						}, {
+							Name:  "VSPHERE_KVSTORE_CONFIGMAP",
+							Value: names.ConfigMap(vms),
 						}},
 					}},
 				},

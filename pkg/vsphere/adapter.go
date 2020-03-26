@@ -37,6 +37,9 @@ import (
 
 type envConfig struct {
 	adapter.EnvConfig
+
+	// The name of the configmap to use as our kvstore.
+	KVConfigMap string `envconfig:"VSPHERE_KVSTORE_CONFIGMAP" required:"true"`
 }
 
 func NewEnvConfig() adapter.EnvConfigAccessor {
@@ -69,10 +72,7 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		logger.Fatalf("Unable to determine source: %v", err)
 	}
 
-	// TODO: configmap name needs to be passed in the env, or the name of the source needs to
-	// plumbed in so we can derive it here.
-	// https://github.com/mattmoor/vmware-sources/issues/8
-	kvstore := kvstore.NewConfigMapKVStore(ctx, "test", env.Namespace, kubeclient.Get(ctx).CoreV1())
+	kvstore := kvstore.NewConfigMapKVStore(ctx, env.KVConfigMap, env.Namespace, kubeclient.Get(ctx).CoreV1())
 	err = kvstore.Init(ctx)
 	if err != nil {
 		logger.Fatalf("couldn't initialize kv store: %v", err)
