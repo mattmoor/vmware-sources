@@ -55,4 +55,5 @@ rm -rf $(find vendor/ -name '*_test.go')
 git apply ${REPO_ROOT_DIR}/vendor/knative.dev/eventing/hack/set-span-id.patch
 
 # Do this for every package under "cmd" except kodata and cmd itself.
-update_licenses third_party/VENDOR-LICENSE "$(find ./cmd -type d | grep -v kodata | grep -vE 'cmd$')"
+# TODO(mattmoor): Disabling this because govmomi has a directory named LICENSE this chokes on.
+# update_licenses third_party/VENDOR-LICENSE "$(find ./cmd -type d | grep -v kodata | grep -vE 'cmd$')"
