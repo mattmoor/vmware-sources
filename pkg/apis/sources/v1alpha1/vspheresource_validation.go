@@ -29,6 +29,5 @@ func (fb *VSphereSource) Validate(ctx context.Context) *apis.FieldError {
 
 // Validate implements apis.Validatable
 func (fbs *VSphereSourceSpec) Validate(ctx context.Context) *apis.FieldError {
-	// TODO(mattmoor): Check other properties, e.g. secret
-	return fbs.Sink.Validate(ctx).ViaField("sink")
+	return fbs.Sink.Validate(ctx).ViaField("sink").Also(fbs.VAuthSpec.Validate(ctx))
 }
