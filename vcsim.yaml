@@ -27,6 +27,7 @@ spec:
         ports:
         - name: https
           containerPort: 8989
+
 ---
 apiVersion: v1
 kind: Service
@@ -39,8 +40,8 @@ spec:
   - name: https
     port: 443
     targetPort: 8989
----
 
+---
 apiVersion: v1
 kind: Secret
 metadata:
@@ -48,8 +49,8 @@ metadata:
 stringData:
   username: user
   password: pass
----
 
+---
 apiVersion: sources.knative.dev/v1alpha1
 kind: VSphereBinding
 metadata:
@@ -66,3 +67,22 @@ spec:
   skipTLSVerify: true
   secretRef:
     name: vsphere-credentials
+
+---
+apiVersion: sources.knative.dev/v1alpha1
+kind: VSphereSource
+metadata:
+ name: vcsim
+spec:
+ sink:
+   ref:
+     apiVersion: eventing.knative.dev/v1beta1
+     kind: Broker
+     name: default
+
+ address: https://vcsim.default.svc.cluster.local
+ skipTLSVerify: true
+ secretRef:
+   name: vsphere-credentials
+
+---

@@ -1329,7 +1329,6 @@
   digest = "1:59cdab8f9aa558f860471c36529a58cf684dc7d8ba7f7d99b876fc0e683207d8"
   name = "knative.dev/eventing"
   packages = [
-    "pkg/adapter",
     "pkg/adapter/v2",
     "pkg/apis/config",
     "pkg/apis/configs",
@@ -1390,7 +1389,6 @@
     "pkg/client/listers/sources/v1alpha1",
     "pkg/client/listers/sources/v1alpha2",
     "pkg/configmap",
-    "pkg/kncloudevents",
     "pkg/logging",
     "pkg/tracing",
   ]
@@ -1487,13 +1485,14 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/cloudevents/sdk-go/v1",
+    "github.com/cloudevents/sdk-go/v2",
     "github.com/google/go-cmp/cmp",
     "github.com/kelseyhightower/envconfig",
     "github.com/vmware/govmomi",
     "github.com/vmware/govmomi/event",
     "github.com/vmware/govmomi/govc",
     "github.com/vmware/govmomi/vapi/rest",
+    "github.com/vmware/govmomi/vapi/tags",
     "github.com/vmware/govmomi/vcsim",
     "github.com/vmware/govmomi/vim25/soap",
     "github.com/vmware/govmomi/vim25/types",
@@ -1530,7 +1529,6 @@
     "k8s.io/code-generator/cmd/defaulter-gen",
     "k8s.io/code-generator/cmd/informer-gen",
     "k8s.io/code-generator/cmd/lister-gen",
-    "knative.dev/eventing/pkg/adapter",
     "knative.dev/eventing/pkg/adapter/v2",
     "knative.dev/eventing/pkg/apis/sources",
     "knative.dev/eventing/pkg/apis/sources/v1alpha1",
@@ -1562,7 +1560,6 @@
     "knative.dev/pkg/ptr",
     "knative.dev/pkg/reconciler",
     "knative.dev/pkg/signals",
-    "knative.dev/pkg/source",
     "knative.dev/pkg/system",
     "knative.dev/pkg/tracker",
     "knative.dev/pkg/webhook",
