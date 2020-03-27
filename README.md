@@ -20,17 +20,6 @@ ko apply -f config
 
 If you do not have access to a VSphere environment, you can use
 [vcsim](https://github.com/vmware/govmomi/tree/master/vcsim) to
-kick the tires. If you have access to VSphere environment, you
-can skip this step.
-
-```shell
-ko apply -f vcsim.yaml
-```
-
-## (Optional) Install a VSphere simulator (vcsim)
-
-If you do not have access to a VSphere environment, you can use
-[vcsim](https://github.com/vmware/govmomi/tree/master/vcsim) to
 simulate events. If you have access to VSphere environment, you
 can skip this step and use that instead. This installs the
 simulator to the default namespace and exposes it as a k8s service
