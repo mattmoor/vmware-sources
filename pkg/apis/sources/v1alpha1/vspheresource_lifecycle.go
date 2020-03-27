@@ -26,6 +26,7 @@ import (
 
 var condSet = apis.NewLivingConditionSet(
 	VSphereSourceConditionSourceReady,
+	VSphereSourceConditionAuthReady,
 	VSphereSourceConditionAdapterReady,
 )
 
