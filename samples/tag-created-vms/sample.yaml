@@ -39,4 +39,4 @@ spec:
   template:
     spec:
       containers:
-      - image: ko://github.com/mattmoor/vmware-sources/sample/tag-created-vms
+      - image: ko://github.com/mattmoor/vmware-sources/samples/tag-created-vms
