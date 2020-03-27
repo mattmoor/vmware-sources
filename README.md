@@ -106,7 +106,7 @@ Then set up the necessary env variables:
 ```
 export K_METRICS_CONFIG={}
 export K_LOGGING_CONFIG={}
-export GOVC_URL=10.78.179.39
+export GOVC_URL=<your vsphere url>
 export GOVC_INSECURE=true
 ```
 
