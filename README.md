@@ -88,6 +88,7 @@ access to kubernetes cluster remotely (https://github.com/mattmoor/vmware-source
 Store the credentials on the filesystem:
 
 ```
+mkdir -p /var/bindings/vsphere
 echo -n 'administrator@Vsphere.local' > /var/bindings/vsphere/username
 echo -n 'mysuper$ecretPassword' > /var/bindings/vsphere/username
 ```
