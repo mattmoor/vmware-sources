@@ -111,7 +111,7 @@ export GOVC_INSECURE=true
 
 Then specify where the source should send events to
 ```
-export SINK_URI=http://localhost:/8080
+export K_SINK=http://localhost:8080
 ```
 
 Because we need access to kubernetes cluster, you need to uncomment this line
