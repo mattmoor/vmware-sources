@@ -14,6 +14,15 @@ required = [
   "github.com/vmware/govmomi/vcsim",
 ]
 
+
+[[override]]
+  name = "knative.dev/pkg"
+  branch = "master"
+
+[[override]]
+  name = "knative.dev/eventing"
+  branch = "master"
+
 [[override]]
   name = "k8s.io/klog"
   version = "v0.2.0"
@@ -37,10 +46,6 @@ required = [
 [[override]]
   name = "k8s.io/client-go"
   version = "kubernetes-1.16.4"
-
-[[override]]
-  name = "knative.dev/pkg"
-  branch = "master"
 
 [[override]]
   name = "google.golang.org/genproto"

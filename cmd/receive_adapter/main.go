@@ -21,7 +21,7 @@ import (
 
 	"github.com/mattmoor/vmware-sources/pkg/vsphere"
 	"k8s.io/client-go/kubernetes"
-	"knative.dev/eventing/pkg/adapter"
+	"knative.dev/eventing/pkg/adapter/v2"
 	kubeclient "knative.dev/pkg/client/injection/kube/client"
 	"knative.dev/pkg/injection/sharedmain"
 	"knative.dev/pkg/signals"

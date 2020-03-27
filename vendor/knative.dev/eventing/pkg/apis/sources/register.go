@@ -24,14 +24,14 @@ import (
 const (
 	GroupName = "sources.knative.dev"
 
-	// SourceDuckAnnotationKey is the annotation key to indicate
+	// SourceDuckLabelKey is the label key to indicate
 	// whether the CRD is a Source duck type.
 	// Valid values: "true" or "false"
-	SourceDuckAnnotationKey = duck.GroupName + "/source"
+	SourceDuckLabelKey = duck.GroupName + "/source"
 
-	// SourceDuckAnnotationValue is the annotation value to indicate
+	// SourceDuckLabelValue is the label value to indicate
 	// the CRD is a Source duck type.
-	SourceDuckAnnotationValue = "true"
+	SourceDuckLabelValue = "true"
 )
 
 var (
@@ -49,5 +49,11 @@ var (
 	SinkBindingResource = schema.GroupResource{
 		Group:    GroupName,
 		Resource: "sinkbindings",
+	}
+
+	// ContainerSourceResource respresents a Knative Eventing Sources ContainerSource
+	ContainerSourceResource = schema.GroupResource{
+		Group:    GroupName,
+		Resource: "containersources",
 	}
 )

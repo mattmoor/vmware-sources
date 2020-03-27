@@ -22,17 +22,16 @@ import (
 	"reflect"
 	"strings"
 
-	cloudevents "github.com/cloudevents/sdk-go/v1"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/event"
 	"github.com/vmware/govmomi/vim25/types"
 	"go.uber.org/zap"
-
-	"knative.dev/eventing/pkg/adapter"
-	kubeclient "knative.dev/pkg/client/injection/kube/client"
+	"knative.dev/eventing/pkg/adapter/v2"
 	"knative.dev/pkg/kvstore"
 	"knative.dev/pkg/logging"
-	"knative.dev/pkg/source"
+
+	kubeclient "knative.dev/pkg/client/injection/kube/client"
 )
 
 type envConfig struct {
@@ -53,11 +52,10 @@ type vAdapter struct {
 	Source    string
 	VClient   *govmomi.Client
 	CEClient  cloudevents.Client
-	Reporter  source.StatsReporter
 	KVStore   kvstore.Interface
 }
 
-func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClient cloudevents.Client, reporter source.StatsReporter) adapter.Adapter {
+func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClient cloudevents.Client) adapter.Adapter {
 	env := processed.(*envConfig)
 
 	logger := logging.FromContext(ctx)
@@ -72,8 +70,8 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		logger.Fatalf("Unable to determine source: %v", err)
 	}
 
-	kvstore := kvstore.NewConfigMapKVStore(ctx, env.KVConfigMap, env.Namespace, kubeclient.Get(ctx).CoreV1())
-	err = kvstore.Init(ctx)
+	store := kvstore.NewConfigMapKVStore(ctx, env.KVConfigMap, env.Namespace, kubeclient.Get(ctx).CoreV1())
+	err = store.Init(ctx)
 	if err != nil {
 		logger.Fatalf("couldn't initialize kv store: %v", err)
 	}
@@ -82,10 +80,9 @@ func NewAdapter(ctx context.Context, processed adapter.EnvConfigAccessor, ceClie
 		Logger:    logger,
 		Namespace: env.Namespace,
 		Source:    source,
-		Reporter:  reporter,
 		VClient:   vClient,
 		CEClient:  ceClient,
-		KVStore:   kvstore,
+		KVStore:   store,
 	}
 }
 
@@ -121,26 +118,18 @@ func (a *vAdapter) sendEvents(ctx context.Context) func(moref types.ManagedObjec
 			case *types.ExtendedEvent:
 				event.SetExtension("ExtendedEvent", e)
 			}
-
 			// TODO(mattmoor): Consider setting the subject
 
 			// TODO(mattmoor): Switch to XML when sockeye stops sucking at it.
-			event.SetDataContentType(cloudevents.ApplicationJSON)
-			event.SetData(be)
+			if err := event.SetData(cloudevents.ApplicationJSON, be); err != nil {
+				logging.FromContext(ctx).Errorw("failed to set data on event", zap.Error(err))
+			}
 
-			rctx, _, err := a.CEClient.Send(ctx, event)
-			rtctx := cloudevents.HTTPTransportContextFrom(rctx)
+			err := a.CEClient.Send(ctx, event)
 			if err != nil {
 				a.Logger.Error("failed to send cloudevent", zap.Error(err))
 				return err
 			}
-
-			a.Reporter.ReportEventCount(&source.ReportArgs{
-				Namespace:     a.Namespace,
-				EventSource:   event.Source(),
-				EventType:     event.Type(),
-				ResourceGroup: "vspheresources.sources.knateve.dev",
-			}, rtctx.StatusCode)
 		}
 
 		return nil
