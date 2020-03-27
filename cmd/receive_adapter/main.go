@@ -19,7 +19,7 @@ package main
 import (
 	"context"
 
-	// Uncomment if you want to run locally against remote cluster.
+	// Uncomment if you want to run locally against remote GKE cluster.
 	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	"github.com/mattmoor/vmware-sources/pkg/vsphere"
