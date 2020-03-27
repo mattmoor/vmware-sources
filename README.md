@@ -105,8 +105,8 @@ Then set up the necessary env variables:
 ```
 export K_METRICS_CONFIG={}
 export K_LOGGING_CONFIG={}
-export GOVMOMI_ADDRESS=10.78.179.39
-export GOVMOMI_INSECURE=true
+export GOVC_URL=10.78.179.39
+export GOVC_INSECURE=true
 ```
 
 Then specify where the source should send events to
