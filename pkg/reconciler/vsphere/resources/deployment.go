@@ -62,8 +62,15 @@ func MakeDeployment(ctx context.Context, vms *v1alpha1.VSphereSource, adapterIma
 								},
 							},
 						}, {
+							Name: "NAME",
+							ValueFrom: &corev1.EnvVarSource{
+								FieldRef: &corev1.ObjectFieldSelector{
+									FieldPath: "metadata.name",
+								},
+							},
+						}, {
 							Name:  "K_METRICS_CONFIG",
-							Value: "{}",
+							Value: `{"Domain":"vsphere.vmware.com/source","Component":"source"}`,
 						}, {
 							Name:  "K_LOGGING_CONFIG",
 							Value: "{}",

@@ -120,7 +120,7 @@
   version = "v0.2.1"
 
 [[projects]]
-  digest = "1:e7a3a5ca367d1457468db6c8492657275ed7a01ca9d15abaf9e6f48c0a06e4ba"
+  digest = "1:8534f18aa70eada156115b688b390b908f5b84276d77f40dd6f6d7a2d8874b70"
   name = "github.com/cloudevents/sdk-go"
   packages = [
     "v1",
@@ -136,16 +136,19 @@
     "v1/cloudevents/transport",
     "v1/cloudevents/transport/http",
     "v1/cloudevents/types",
+    "v2",
     "v2/binding",
     "v2/binding/format",
     "v2/binding/spec",
     "v2/binding/transformer",
+    "v2/client",
     "v2/context",
     "v2/event",
     "v2/event/datacodec",
     "v2/event/datacodec/json",
     "v2/event/datacodec/text",
     "v2/event/datacodec/xml",
+    "v2/extensions",
     "v2/observability",
     "v2/protocol",
     "v2/protocol/http",
@@ -1323,10 +1326,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9ea51326c771e665dc0d1f5cec0dd428b5c0d0c60696285ea8573d8fb3d11e8f"
+  digest = "1:59cdab8f9aa558f860471c36529a58cf684dc7d8ba7f7d99b876fc0e683207d8"
   name = "knative.dev/eventing"
   packages = [
     "pkg/adapter",
+    "pkg/adapter/v2",
     "pkg/apis/config",
     "pkg/apis/configs",
     "pkg/apis/configs/v1alpha1",
@@ -1391,7 +1395,7 @@
     "pkg/tracing",
   ]
   pruneopts = "T"
-  revision = "4b2f6e858634e9c5e50f1dc6c1a717b4873f1ea7"
+  revision = "bab33fbbc5d8cfe73f6498cd3f20e3e9d8ca6fb4"
 
 [[projects]]
   branch = "master"
@@ -1462,14 +1466,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:3f2366ce9a05503ac8da902b58e898c285cc9a972e0e89fda0b2a2fedcd4fb46"
+  digest = "1:2987a1db00b983af9e5d5281639a754fb6449eef01e6a375894829eaec17cb2a"
   name = "knative.dev/test-infra"
   packages = [
     "scripts",
     "tools/dep-collector",
   ]
   pruneopts = "UT"
-  revision = "0bc1e8bb1582a8738da1b5c485084a84bf76f17c"
+  revision = "17335bd2f34224bce33f39c9694e703aeeb52b97"
 
 [[projects]]
   digest = "1:8730e0150dfb2b7e173890c8b9868e7a273082ef8e39f4940e3506a481cf895c"
@@ -1527,6 +1531,7 @@
     "k8s.io/code-generator/cmd/informer-gen",
     "k8s.io/code-generator/cmd/lister-gen",
     "knative.dev/eventing/pkg/adapter",
+    "knative.dev/eventing/pkg/adapter/v2",
     "knative.dev/eventing/pkg/apis/sources",
     "knative.dev/eventing/pkg/apis/sources/v1alpha1",
     "knative.dev/eventing/pkg/client/clientset/versioned",
