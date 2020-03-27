@@ -78,6 +78,56 @@ You can see the events in the logs:
 kubectl logs -l 'serving.knative.dev/service=event-display' -c user-container
 ```
 
+### Local development notes
+
+Sometimes you might want to develop against a VSphere server that is
+not accessible from the Internet. So you can run the receive adapter
+(the data plane for the events) locally like so. For now, you need
+access to kubernetes cluster remotely (https://github.com/mattmoor/vmware-sources/issues/20).
+
+Store the credentials on the filesystem:
+
+```
+echo -n 'administrator@Vsphere.local' > /var/bindings/vsphere/username
+echo -n 'mysuper$ecretPassword' > /var/bindings/vsphere/username
+```
+
+You need to specify a namespace to store state at...
+https://github.com/mattmoor/vmware-sources/issues/20
+```
+export NAMESPACE=default
+export VSPHERE_KVSTORE_CONFIGMAP=vsphere-test
+```
+
+
+Then set up the necessary env variables:
+
+```
+export K_METRICS_CONFIG={}
+export K_LOGGING_CONFIG={}
+export GOVMOMI_ADDRESS=10.78.179.39
+export GOVMOMI_INSECURE=true
+```
+
+Then specify where the source should send events to
+```
+export SINK_URI=http://localhost:/8080
+```
+
+Because we need access to kubernetes cluster, you need to uncomment this line
+cmd/receive_adapter/main.go:23
+
+```
+	// Uncomment if you want to run locally against remote cluster.
+	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+```
+
+And then finally run the receive adapter, pointing to your kubeconfig file
+
+```shell
+go run ./cmd/receive_adapter/main.go -kubeconfig=/Users/vaikas/.kube/config
+```
+
 To learn more about Knative, please visit our
 [Knative docs](https://github.com/knative/docs) repository.
 
