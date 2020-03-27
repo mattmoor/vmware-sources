@@ -109,14 +109,17 @@ func TestVSphereBindingUndo(t *testing.T) {
 								Name:  "FOO",
 								Value: "BAR",
 							}, {
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: "http://localhost:8080",
 							}, {
 								Name:  "BAZ",
 								Value: "INGA",
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: "false",
+							}, {
+								Name:  "GOVC_USERNAME",
+								Value: "user",
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
 								Name:      vsphere.VolumeName,
@@ -131,11 +134,14 @@ func TestVSphereBindingUndo(t *testing.T) {
 								Name:  "FOO",
 								Value: "BAR",
 							}, {
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: "http://localhost:8080",
 							}, {
 								Name:  "BAZ",
 								Value: "INGA",
+							}, {
+								Name:  "GOVC_PASSWORD",
+								Value: "pass",
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
 								Name:      vsphere.VolumeName,
@@ -146,13 +152,13 @@ func TestVSphereBindingUndo(t *testing.T) {
 							Name:  "sidecar",
 							Image: "busybox",
 							Env: []corev1.EnvVar{{
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: "http://localhost:8080",
 							}, {
 								Name:  "BAZ",
 								Value: "INGA",
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: "true",
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
@@ -260,11 +266,31 @@ func TestVSphereBindingDo(t *testing.T) {
 							Name:  "blah",
 							Image: "busybox",
 							Env: []corev1.EnvVar{{
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: url.String(),
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: "false",
+							}, {
+								Name: "GOVC_USERNAME",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthUsernameKey,
+									},
+								},
+							}, {
+								Name: "GOVC_PASSWORD",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthPasswordKey,
+									},
+								},
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
 								Name:      vsphere.VolumeName,
@@ -292,11 +318,31 @@ func TestVSphereBindingDo(t *testing.T) {
 							Name:  "blah",
 							Image: "busybox",
 							Env: []corev1.EnvVar{{
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: url.String(),
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: "false",
+							}, {
+								Name: "GOVC_USERNAME",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthUsernameKey,
+									},
+								},
+							}, {
+								Name: "GOVC_PASSWORD",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthPasswordKey,
+									},
+								},
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
 								Name:      vsphere.VolumeName,
@@ -326,11 +372,31 @@ func TestVSphereBindingDo(t *testing.T) {
 							Name:  "blah",
 							Image: "busybox",
 							Env: []corev1.EnvVar{{
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: "the wrong value",
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: `{"extensions":{"wrong":"value"}}`,
+							}, {
+								Name: "GOVC_USERNAME",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthUsernameKey,
+									},
+								},
+							}, {
+								Name: "GOVC_PASSWORD",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthPasswordKey,
+									},
+								},
 							}},
 						}},
 					},
@@ -345,11 +411,31 @@ func TestVSphereBindingDo(t *testing.T) {
 							Name:  "blah",
 							Image: "busybox",
 							Env: []corev1.EnvVar{{
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: url.String(),
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: "false",
+							}, {
+								Name: "GOVC_USERNAME",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthUsernameKey,
+									},
+								},
+							}, {
+								Name: "GOVC_PASSWORD",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthPasswordKey,
+									},
+								},
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
 								Name:      vsphere.VolumeName,
@@ -409,11 +495,31 @@ func TestVSphereBindingDo(t *testing.T) {
 							Name:  "setup",
 							Image: "busybox",
 							Env: []corev1.EnvVar{{
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: url.String(),
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: "false",
+							}, {
+								Name: "GOVC_USERNAME",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthUsernameKey,
+									},
+								},
+							}, {
+								Name: "GOVC_PASSWORD",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthPasswordKey,
+									},
+								},
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
 								Name:      vsphere.VolumeName,
@@ -431,11 +537,31 @@ func TestVSphereBindingDo(t *testing.T) {
 								Name:  "BAZ",
 								Value: "INGA",
 							}, {
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: url.String(),
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: "false",
+							}, {
+								Name: "GOVC_USERNAME",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthUsernameKey,
+									},
+								},
+							}, {
+								Name: "GOVC_PASSWORD",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthPasswordKey,
+									},
+								},
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
 								Name:      vsphere.VolumeName,
@@ -449,11 +575,31 @@ func TestVSphereBindingDo(t *testing.T) {
 								Name:  "BAZ",
 								Value: "INGA",
 							}, {
-								Name:  "GOVMOMI_ADDRESS",
+								Name:  "GOVC_URL",
 								Value: url.String(),
 							}, {
-								Name:  "GOVMOMI_INSECURE",
+								Name:  "GOVC_INSECURE",
 								Value: "false",
+							}, {
+								Name: "GOVC_USERNAME",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthUsernameKey,
+									},
+								},
+							}, {
+								Name: "GOVC_PASSWORD",
+								ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{
+											Name: secretName,
+										},
+										Key: corev1.BasicAuthPasswordKey,
+									},
+								},
 							}},
 							VolumeMounts: []corev1.VolumeMount{{
 								Name:      vsphere.VolumeName,

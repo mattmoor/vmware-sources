@@ -365,6 +365,23 @@
   version = "v1.4.0"
 
 [[projects]]
+  branch = "govmomi"
+  digest = "1:f49ed6cb2129e9a3ce9dde5037cb243b5849c0ec0c7973b9d1e987872d8b8cc6"
+  name = "github.com/kr/pretty"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "2ee9d7453c02ef7fa518a83ae23644eb8872186a"
+  source = "https://github.com/dougm/pretty"
+
+[[projects]]
+  digest = "1:c3a7836b5904db0f8b609595b619916a6831cb35b8b714aec39f96d00c6155d8"
+  name = "github.com/kr/text"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "702c74938df48b97370179f33ce2107bd7ff3b3e"
+  version = "v0.2.0"
+
+[[projects]]
   branch = "master"
   digest = "1:a12508addb76a16593d8a3cee41d782fdf738f727d421f0bcc2dd2ee76821c01"
   name = "github.com/lightstep/tracecontext.go"
@@ -510,12 +527,91 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:c5336b58ab8612bdb24b05b581007d849112c78257df38511878ad6928e8a65c"
+  digest = "1:fc07dbc731c0cc53d669fe56f09819b8f342f90f8a2e3a8638817f21ddcb26ae"
   name = "github.com/vmware/govmomi"
   packages = [
     ".",
     "event",
     "find",
+    "govc",
+    "govc/about",
+    "govc/cli",
+    "govc/cluster",
+    "govc/cluster/group",
+    "govc/cluster/override",
+    "govc/cluster/rule",
+    "govc/datacenter",
+    "govc/datastore",
+    "govc/datastore/cluster",
+    "govc/datastore/disk",
+    "govc/datastore/maintenance",
+    "govc/datastore/vsan",
+    "govc/device",
+    "govc/device/cdrom",
+    "govc/device/floppy",
+    "govc/device/scsi",
+    "govc/device/serial",
+    "govc/device/usb",
+    "govc/disk",
+    "govc/disk/snapshot",
+    "govc/dvs",
+    "govc/dvs/portgroup",
+    "govc/env",
+    "govc/events",
+    "govc/export",
+    "govc/extension",
+    "govc/fields",
+    "govc/flags",
+    "govc/folder",
+    "govc/host",
+    "govc/host/account",
+    "govc/host/autostart",
+    "govc/host/cert",
+    "govc/host/date",
+    "govc/host/esxcli",
+    "govc/host/firewall",
+    "govc/host/maintenance",
+    "govc/host/option",
+    "govc/host/portgroup",
+    "govc/host/service",
+    "govc/host/storage",
+    "govc/host/vnic",
+    "govc/host/vswitch",
+    "govc/importx",
+    "govc/library",
+    "govc/library/session",
+    "govc/license",
+    "govc/logs",
+    "govc/ls",
+    "govc/metric",
+    "govc/metric/interval",
+    "govc/object",
+    "govc/option",
+    "govc/permissions",
+    "govc/pool",
+    "govc/role",
+    "govc/session",
+    "govc/sso",
+    "govc/sso/group",
+    "govc/sso/service",
+    "govc/sso/user",
+    "govc/tags",
+    "govc/tags/association",
+    "govc/tags/category",
+    "govc/task",
+    "govc/vapp",
+    "govc/version",
+    "govc/vm",
+    "govc/vm/disk",
+    "govc/vm/guest",
+    "govc/vm/network",
+    "govc/vm/option",
+    "govc/vm/rdm",
+    "govc/vm/snapshot",
+    "guest",
+    "guest/toolbox",
+    "internal",
+    "license",
     "list",
     "lookup",
     "lookup/methods",
@@ -528,20 +624,27 @@
     "pbm/methods",
     "pbm/simulator",
     "pbm/types",
+    "performance",
     "property",
     "session",
     "simulator",
     "simulator/esx",
     "simulator/internal",
     "simulator/vpx",
+    "ssoadmin",
+    "ssoadmin/methods",
+    "ssoadmin/types",
+    "sts",
     "sts/internal",
     "sts/simulator",
     "task",
+    "units",
     "vapi/cluster",
     "vapi/cluster/internal",
     "vapi/cluster/simulator",
     "vapi/internal",
     "vapi/library",
+    "vapi/library/finder",
     "vapi/rest",
     "vapi/simulator",
     "vapi/tags",
@@ -556,6 +659,10 @@
     "vim25/soap",
     "vim25/types",
     "vim25/xml",
+    "vmdk",
+    "vslm",
+    "vslm/methods",
+    "vslm/types",
   ]
   pruneopts = "NUT"
   revision = "e7df0c1118c15c0b35fe08f183ca084269ea6542"
@@ -1385,6 +1492,8 @@
     "github.com/kelseyhightower/envconfig",
     "github.com/vmware/govmomi",
     "github.com/vmware/govmomi/event",
+    "github.com/vmware/govmomi/govc",
+    "github.com/vmware/govmomi/vapi/rest",
     "github.com/vmware/govmomi/vcsim",
     "github.com/vmware/govmomi/vim25/soap",
     "github.com/vmware/govmomi/vim25/types",

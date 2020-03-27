@@ -1,85 +1,38 @@
-apiVersion: v1
-kind: Secret
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
 metadata:
-  name: vsphere-credentials
-stringData:
-  username: user
-  password: pass
+  name: to-sockeye
+spec:
+  filter:
+    attributes:
+      type: com.vmware.vsphere.vmcreatedevent
+    # attributes:
+    #   type: dev.mattmoor.vsample
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: sockeye
 ---
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: adapter-test
-# spec:
-#   selector:
-#     matchLabels:
-#       app: adapter
-#   template:
-#     metadata:
-#       labels:
-#         app: adapter
-#     spec:
-#       containers:
-#       - name: adapter
-#         image: ko://github.com/mattmoor/vmware-sources/cmd/receive_adapter
-#         env:
-#         - name: NAMESPACE
-#           valueFrom:
-#             fieldRef:
-#               fieldPath: metadata.namespace
-#         - name: K_SINK
-#           value: http://sockeye.default.svc.cluster.local
-#         - name: K_METRICS_CONFIG
-#           value: '{}'
-#         - name: K_LOGGING_CONFIG
-#           value: '{}'
-#         - name: GOVMOMI_ADDRESS
-#           value: vcsim.default.svc.cluster.local
-#         - name: GOVMOMI_INSECURE
-#           value: "true"
 
-#         volumeMounts:
-#         - mountPath: /var/bindings/vsphere
-#           name: vsphere-binding
-#           readOnly: true
 
-#       volumes:
-#       - name: vsphere-binding
-#         secret:
-#           secretName: vsphere-credentials
+apiVersion: sources.knative.dev/v1alpha1
+kind: VSphereSource
+metadata:
+ name: vcsim
+spec:
+ sink:
+   ref:
+     apiVersion: eventing.knative.dev/v1beta1
+     kind: Broker
+     name: default
 
-#---
-#apiVersion: sources.knative.dev/v1alpha1
-#kind: VSphereSource
-#metadata:
-#  name: blah
-#  namespace: broker-test
-#spec:
-#  sink:
-#    ref:
-#      apiVersion: eventing.knative.dev/v1beta1
-#      kind: Broker
-#      name: ville-broker
+ address: https://vcsim.default.svc.cluster.local
+ skipTLSVerify: true
+ secretRef:
+   name: vsphere-credentials
+---
 
-#  address: vcsim.default.svc.cluster.local
-#  skipTLSVerify: true
-#  secretRef:
-#    name: vsphere-credentials
-# ---
-# apiVersion: eventing.knative.dev/v1alpha1
-# kind: Trigger
-# metadata:
-#   name: to-sockeye
-# spec:
-#   filter:
-#     # attributes:
-#     #   type: com.vmware.vsphere.datacentercreatedevent
-#   subscriber:
-#     ref:
-#       apiVersion: serving.knative.dev/v1
-#       kind: Service
-#       name: sockeye
-# ---
 # apiVersion: sources.knative.dev/v1alpha1
 # kind: VSphereBinding
 # metadata:
