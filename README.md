@@ -126,7 +126,7 @@ cmd/receive_adapter/main.go:23
 And then finally run the receive adapter, pointing to your kubeconfig file
 
 ```shell
-go run ./cmd/receive_adapter/main.go -kubeconfig=/Users/vaikas/.kube/config
+go run ./cmd/receive_adapter/main.go
 ```
 
 To learn more about Knative, please visit our
