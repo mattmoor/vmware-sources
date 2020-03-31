@@ -124,9 +124,9 @@ func (a *vAdapter) sendEvents(ctx context.Context) func(moref types.ManagedObjec
 			}
 
 			result := a.CEClient.Send(ctx, event)
-			if !cloudevents.IsAck(result) {
-				a.Logger.Error("failed to send cloudevent", zap.Error(err))
-				return err
+			if !cloudevents.IsACK(result) {
+				a.Logger.Error("failed to send cloudevent", zap.Error(result))
+				return result
 			}
 		}
 
