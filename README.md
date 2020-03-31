@@ -129,6 +129,42 @@ And then finally run the receive adapter, pointing to your kubeconfig file
 go run ./cmd/receive_adapter/main.go
 ```
 
+### Local development notes with KIND
+
+These are notes of how to get KIND / Mink running locally.
+
+You have to have Docker running first.
+
+Then install kind:
+
+```shell
+GO111MODULE="on" go get sigs.k8s.io/kind@v0.7.0 && kind create cluster
+```
+
+Then install mink on it:
+
+```shell
+kubectl --context kind-kind apply -f /tmp/vminzu.yaml
+```
+
+(OPTIONAL) Then you might need to install image secrets. For GKE you would do it like so:
+
+```shell
+SA_EMAIL=$(gcloud iam service-accounts --format='value(email)' create k8s-gcr-auth-ro)
+gcloud iam service-accounts keys create k8s-gcr-auth-ro.json --iam-account=$SA_EMAIL
+PROJECT=$(gcloud config list core/project --format='value(core.project)')
+gcloud projects add-iam-policy-binding $PROJECT --member serviceAccount:$SA_EMAIL --role roles/storage.objectViewer
+kubectl --context kind-kind -n vmware-sources create secret docker-registry image-secrets   --docker-server=https://gcr.io   --docker-username=_json_key   --docker-email=user@example.com   --docker-password="$(cat k8s-gcr-auth-ro.json)"
+kubectl --context kind-kind -n vmware-sources patch serviceaccount controller -p "{\"imagePullSecrets\": [{\"name\": \"image-secrets\"}]}"
+```
+
+
+Then install the vmspheresource
+```shell
+ko --context kind-kind apply -f ./config
+```
+
+
 To learn more about Knative, please visit our
 [Knative docs](https://github.com/knative/docs) repository.
 
